@@ -1,0 +1,31 @@
+/* Custom Text Color */
+body {
+    color: #333;
+}
+
+/* Custom Button Styles */
+.btn-custom {
+    background-color: #ffcccb;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.btn-custom:hover {
+    background-color: #0056b3;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+    margin-bottom: 20px;
+}
+
+.breadcrumb a {
+    color: #333;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}

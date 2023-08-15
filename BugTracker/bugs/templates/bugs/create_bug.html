@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 </head>
 <body>
-<h1>Create Bug</h1>
+<h2>{{ project_name }} / Create Bug</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

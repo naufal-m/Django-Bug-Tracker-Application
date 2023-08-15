@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Bug, Project
 from .forms import BugForm, ProjectForm
+from django.http import JsonResponse
 
 
 
@@ -21,7 +22,8 @@ def create_project(request):
 def bug_list(request, project_id):
     # bugs = Bug.objects.all()
     bugs = Bug.objects.filter(project_id=project_id)
-    return render(request, 'bugs/bug_list.html', {'bugs': bugs, 'project_id': project_id})
+    project = Project.objects.get(id=project_id)
+    return render(request, 'bugs/bug_list.html', {'bugs': bugs, 'project_name': project.name, 'project_id': project_id})
 
 def create_bug(request, project_id):
     if request.method == 'POST':
@@ -33,4 +35,15 @@ def create_bug(request, project_id):
             return redirect('bug_list', project_id=project_id)
     else:
         form = BugForm()
-    return render(request, 'bugs/create_bug.html', {'form': form, 'project_id': project_id})
+        project = Project.objects.get(id=project_id)
+    return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name, 'project_id': project_id})
+
+def update_bug_status(request, bug_id):
+    if request.method == 'POST':
+        bug = Bug.objects.get(id=bug_id)
+        new_status = request.POST.get('status')
+        bug.status = new_status
+        bug.save()
+
+        success_message = f'Bug status updated to {new_status}'
+        return JsonResponse({'status': 'success', 'message': success_message})

@@ -1,18 +1,32 @@
 {% extends 'bugs/base.html' %}
 
 {% block title %}Project List{% endblock %}
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+
 
 {% block content %}
+<div class="container">
 <h1>Project List</h1>
-    <ul>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
         {% for project in projects %}
-            <li><a href="{% url 'bug_list' project.id %}">{{ project.name }}</a></li>
+        <tr>
+            <td>{{ project.id }}</td>
+            <td><a href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
+        </tr>
         {% endfor %}
-    </ul>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New Project
-    </button>
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New Project</button>
+</div>
 
 <!-- Create Project Modal -->
 <div class="modal fade" id="createProjectModal" tabindex="-1" role="dialog" aria-labelledby="createProjectModalLabel" aria-hidden="true">
