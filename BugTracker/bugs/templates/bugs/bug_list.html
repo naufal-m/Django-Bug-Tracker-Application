@@ -1,0 +1,60 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Bug List</title>-->
+{% extends 'bugs/base.html' %}
+
+{% block title %}Bug List{% endblock %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<!--</head>-->
+<!--<body>-->
+
+{% block content %}
+<h1>Bug List</h1>
+        <table class="table m" >
+        <thead>
+            <tr class="table-row">
+                <th>Buf_ID</th>
+                <th>Title</th>
+                <th>Created On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bug in bugs %}
+                <tr>
+                    <td><a href="#" data-toggle="modal" data-target="#bugModal{{ bug.id }}">{{ bug.id }}</a></td>
+                    <td>{{ bug.title }}</td>
+                    <td>{{ bug.created_at }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+            {% for bug in bugs %}
+    <!-- Modal -->
+    <div class="modal fade" id="bugModal{{ bug.id }}" tabindex="-1" role="dialog" aria-labelledby="bugModalLabel{{ bug.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bugModalLabel{{ bug.id }}">Bug Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>ID:</strong> {{ bug.id }}</p>
+                    <p><strong>Title:</strong> {{ bug.title }}</p>
+                    <p><strong>Description:</strong> {{ bug.description }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+    </table>
+    <a href="{% url 'create_bug' project_id=project_id %}">Create New Bug</a>
+{% endblock %}
+<!--</body>-->
+<!--</html>-->
