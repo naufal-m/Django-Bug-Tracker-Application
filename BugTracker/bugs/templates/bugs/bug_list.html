@@ -7,9 +7,9 @@
 
 {% block content %}
 <div  class="bread-crumb" >
-    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a></p>
+    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | {{ project_name }}</p>
     </div>
-<h2>{{ project_name }} / Bug List</h2>
+<h2 style="border-bottom: 2px solid #ccc;">Bug List</h2>
 
 <!-- Display status counts at the top -->
 <div class="status-count">
@@ -25,6 +25,18 @@
 <!--        <li>Close: {{ close_count }}</li>-->
 <!--        <li>Done: {{ done_count }}</li>-->
 <!--    </ul>-->
+
+</div>
+
+<div class="filter"  style="margin-top: 50px; margin-bottom: 10px; display: flex; align-items: center;">
+    <select id="status-filter">
+        <option value="all">All</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Re-open">Re-open</option>
+        <option value="Close">Close</option>
+        <option value="Done">Done</option>
+    </select>
     <div class="create_bug_link">
         <a style="color: #b8253b;" href="{% url 'create_bug' project_id=project_id %}">Create New</a>
     </div>
@@ -41,7 +53,7 @@
         </thead>
         <tbody>
             {% for bug in bugs %}
-                <tr>
+                <tr data-status="{{ bug.status }}">
                     <td><a style="color: #386fa7;" href="#" data-toggle="modal" data-target="#bugModal{{ bug.id }}">{{ bug.bug_id }}</a></td>
                     <td>{{ bug.title }}</td>
                     <td>{{ bug.status }}</td>
@@ -75,24 +87,24 @@
                     <!-- Add status edit form -->
                 <form class="update-status-form" method="post" action="{% url 'update_bug_status' bug_id=bug.id %}" >
                     {% csrf_token %}
-                    <label for="status">Change Status:</label>
-                    <select name="status" id="status">
+                    <label for="status"><strong>Change Status:</strong></label>
+                    <select name="status" id="status" style="margin-left: 5px;">
                         {% for choice in bug.STATUS_CHOICES %}
                         <option value="{{ choice.0 }}">{{ choice.1 }}</option>
                         {% endfor %}
                     </select>
                     <input type="hidden" id="command" name="command" value="{{ command }}">
-                    <button style="background-color: #2b4a6a; padding: 5px;
-    font-size: 14px;" type="submit" class="btn btn-primary">Update Status</button>
+                    <button style="background-color: #2b4a6a; padding: 4px 12px 4px 12px; margin-left: 165px;
+    font-size: 14px;" type="submit" class="btn btn-primary">Update</button>
                 </form>
                     <!-- Success message container -->
                 <div class="success-message"></div>
 
                 </div>
                 <div class="modal-footer">
-                 <div class="history">
-                    <p><strong>History:</strong></p>
-<pre>{{ bug.history }}</pre>
+                 <div class="history" >
+                    <p style="border-bottom: 2px solid #ccc;"><strong>History:</strong></p>
+<pre >{{ bug.history }}</pre>
                 </div>
                     </div>
             </div>

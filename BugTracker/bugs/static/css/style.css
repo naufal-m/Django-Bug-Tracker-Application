@@ -91,3 +91,11 @@ th:nth-child(2),
 td:nth-child(2) {
     width: 60%;
 }
+
+.history {
+    padding-top: 10px;
+}
+
+.history div {
+    margin-bottom: 10px; /* Add some space between history entries */
+}

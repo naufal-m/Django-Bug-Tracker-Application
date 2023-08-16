@@ -31,8 +31,9 @@ $(document).ready(function () {
                 form.find('#command').val('');
 
                 // Update the history section
-                var history = $('.modal-footer .history');  // Select the correct history section
-                var historyEntry = '<p>' + data.history_entry + '</p>';
+                var history = $('.history');  // Select the correct history section
+//                var historyEntry = '<p>' + data.history_entry + '</p>';
+                var historyEntry = $('<div>').text(data.history_entry);
                 history.append(historyEntry);
 
                 // Close the modal after a delay

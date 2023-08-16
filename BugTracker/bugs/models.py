@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.utils.text import slugify
 
 # Create your models here.
 class Project(models.Model):
@@ -9,6 +10,11 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = slugify(self.name)[:3].upper()
+        super().save(*args, **kwargs)
 class Bug(models.Model):
     STATUS_CHOICES = [
         ('Open', 'Open'),
@@ -43,8 +49,4 @@ class Bug(models.Model):
 
         super(Bug, self).save(*args, **kwargs)
 
-        # # Update the related Project's code based on the latest bug
-        # if self.project:
-        #     self.project.code = slugify(self.project.name)[:3].upper()
-        #     self.project.save()
 
