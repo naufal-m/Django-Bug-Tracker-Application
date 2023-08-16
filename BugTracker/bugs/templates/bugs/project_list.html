@@ -8,24 +8,30 @@
 
 {% block content %}
 <div class="container">
-<h1>Project List</h1>
+<h1 style="margin-top: 50px; margin-bottom: 30px;">Project List</h1>
+    <div class="create-project-link">
+        <button style="margin-bottom: 10px; margin-left:970px; background-color: #2b4a6a; padding: 6px 12px 6px 12px;
+    font-size: 14px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New</button>
+    </div>
     <table class="table">
-        <thead>
+        <thead class="project-head-title">
         <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Code</th>
         </tr>
         </thead>
         <tbody>
         {% for project in projects %}
         <tr>
             <td>{{ project.id }}</td>
-            <td><a href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
+            <td><a style="color: #386fa7;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
+            <td><span style="color: #b8253b;">{{ project.code }}</span></td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New Project</button>
+<!--    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New Project</button>-->
 </div>
 
 <!-- Create Project Modal -->
@@ -45,7 +51,8 @@
                         <label for="projectName">Project Name:</label>
                         <input type="text" class="form-control" id="projectName" name="name" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Create Project</button>
+                    <button style="background-color: #2b4a6a; padding: 8px;
+    font-size: 14px;" type="submit" class="btn btn-primary">Create Project</button>
                 </form>
             </div>
         </div>

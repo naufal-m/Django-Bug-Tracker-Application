@@ -1,14 +1,35 @@
 {% extends 'bugs/base.html' %}
 
 {% block title %}Bug List{% endblock %}
+
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 
 {% block content %}
-<div  class="bread-crumb">
-    <p><a href="{% url 'project_list' %}">Back to Project List</a></p>
-<h2>{{ project_name }} / Bug List</h2>
+<div  class="bread-crumb" >
+    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a></p>
     </div>
+<h2>{{ project_name }} / Bug List</h2>
+
+<!-- Display status counts at the top -->
+<div class="status-count">
+    <p><strong>Open:</strong> <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>In Progress:</strong><span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>Re-open:</strong><span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>Close:</strong><span style="color: grey;">  {{ close_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>Done:</strong> <span style="color: green;">  {{ done_count }}</span></p>
+<!--    <ul>-->
+<!--        <li>Open: {{ open_count }}</li>-->
+<!--        <li>In Progress: {{ in_progress_count }}</li>-->
+<!--        <li>Re-open: {{ reopen_count }}</li>-->
+<!--        <li>Close: {{ close_count }}</li>-->
+<!--        <li>Done: {{ done_count }}</li>-->
+<!--    </ul>-->
+    <div class="create_bug_link">
+        <a style="color: #b8253b;" href="{% url 'create_bug' project_id=project_id %}">Create New</a>
+    </div>
+</div>
+
         <table class="table m" >
         <thead>
             <tr class="table-row">
@@ -21,7 +42,7 @@
         <tbody>
             {% for bug in bugs %}
                 <tr>
-                    <td><a href="#" data-toggle="modal" data-target="#bugModal{{ bug.id }}">{{ bug.bug_id }}</a></td>
+                    <td><a style="color: #386fa7;" href="#" data-toggle="modal" data-target="#bugModal{{ bug.id }}">{{ bug.bug_id }}</a></td>
                     <td>{{ bug.title }}</td>
                     <td>{{ bug.status }}</td>
                     <td>{{ bug.created_at }}</td>
@@ -46,6 +67,10 @@
                     <p><strong>Title:</strong> {{ bug.title }}</p>
                     <p><strong>Description:</strong> {{ bug.description }}</p>
                     <p><strong>Status:</strong> {{ bug.status }}</p>
+                    <div class="form-group">
+        <label for="command"><strong>Commands:</strong></label>
+        <input type="text" class="form-control" name="command" id="commandInput">
+    </div>
 
                     <!-- Add status edit form -->
                 <form class="update-status-form" method="post" action="{% url 'update_bug_status' bug_id=bug.id %}" >
@@ -56,20 +81,28 @@
                         <option value="{{ choice.0 }}">{{ choice.1 }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
+                    <input type="hidden" id="command" name="command" value="{{ command }}">
+                    <button style="background-color: #2b4a6a; padding: 5px;
+    font-size: 14px;" type="submit" class="btn btn-primary">Update Status</button>
                 </form>
                     <!-- Success message container -->
                 <div class="success-message"></div>
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                 <div class="history">
+                    <p><strong>History:</strong></p>
+<pre>{{ bug.history }}</pre>
                 </div>
+                    </div>
             </div>
+<!--               <div class="modal-footer">-->
+<!--                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
+<!--                </div>-->
         </div>
     </div>
 {% endfor %}
     </table>
-    <a href="{% url 'create_bug' project_id=project_id %}">Create New Bug</a>
+<!--    <a href="{% url 'create_bug' project_id=project_id %}">Create New Bug</a>-->
 {% endblock %}
 

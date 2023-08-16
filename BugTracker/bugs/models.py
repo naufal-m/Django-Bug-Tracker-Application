@@ -1,8 +1,11 @@
 from django.db import models
+from datetime import datetime
 
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=100)
+
+    code = models.CharField(max_length=3, blank=True, editable=False)
 
     def __str__(self):
         return self.name
@@ -20,7 +23,10 @@ class Bug(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
-    created_at = models.DateTimeField(auto_now_add=True)
+    command = models.TextField(blank=True)
+    history = models.TextField(blank=True)
+    # created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return self.title
@@ -36,4 +42,9 @@ class Bug(models.Model):
             self.bug_id = f"{prefix}{str(last_sequence).zfill(3)}"
 
         super(Bug, self).save(*args, **kwargs)
+
+        # # Update the related Project's code based on the latest bug
+        # if self.project:
+        #     self.project.code = slugify(self.project.name)[:3].upper()
+        #     self.project.save()
 
