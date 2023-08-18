@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Bug, Project
 from .forms import BugForm, ProjectForm
 from django.http import JsonResponse
@@ -14,6 +14,14 @@ def project_list(request):
     for project in projects:
         project.code = project.name[:3].upper()
     return render(request,  'bugs/project_list.html', {'projects': projects})
+
+
+def delete_project(request, project_id):
+    if request.method == 'POST':
+        project = Project.objects.get(id=project_id)
+        project.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
 
 def create_project(request):
     if request.method == 'POST':
@@ -51,7 +59,7 @@ def bug_list(request, project_id):
 
 def create_bug(request, project_id):
     if request.method == 'POST':
-        form = BugForm(request.POST)
+        form = BugForm(request.POST, request.FILES)
         if form.is_valid():
             bug = form.save(commit=False)
             bug.project_id = project_id # Set the project_id for the bug
@@ -66,7 +74,7 @@ def update_bug_status(request, bug_id):
     if request.method == 'POST':
         bug = Bug.objects.get(id=bug_id)
         new_status = request.POST.get('status')
-        command = request.POST.get('command')
+        command = request.POST.get('command', '')
         current_history = bug.history or ''  # Get the current history or initialize as an empty string
 
         # Convert the current time to the desired timezone
@@ -77,7 +85,7 @@ def update_bug_status(request, bug_id):
         # current_time = timezone.localtime(timezone.now())
         formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
 
-        new_history = f"{current_history}\n{formatted_time}: Status updated to {new_status}, Command: {command}"  # Add the new command to the history
+        new_history = f"{current_history}\n{formatted_time}: Status updated to {new_status}, Comment: {command}"  # Add the new command to the history
         bug.history = new_history
 
 # Update the bug status
@@ -85,5 +93,5 @@ def update_bug_status(request, bug_id):
         bug.save()
 
         success_message = f'Bug status updated to {new_status}'
-        history_entry = f'{formatted_time}: Status updated to {new_status}, Command: {command}'
+        history_entry = f'{formatted_time}: Status updated to {new_status}, Comment: {command}'
         return JsonResponse({'status': 'success', 'message': success_message, 'history_entry': history_entry})

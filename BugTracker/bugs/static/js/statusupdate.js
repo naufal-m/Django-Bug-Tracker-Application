@@ -7,13 +7,15 @@ $(document).ready(function () {
         var formData = form.serialize();
 //        var formdata = new FormData(form[0]);
         var url = form.attr('action');
-        var command = form.find('#command').val(); // Get the command value
+        var command = form.find('input[name="command"]').val(); // Get the command value
 
         // Add the command to the formData
         formData += '&command=' + encodeURIComponent(command);
 
         // Append the command to the FormData object
 //        formData.append('command', command);
+
+        console.log('Command Value:', command);
 
         $.ajax({
             type: 'POST',
@@ -28,7 +30,7 @@ $(document).ready(function () {
                 modal.find('.modal-body .success-message').html(successMessage);
 
                 // Clear the command field
-                form.find('#command').val('');
+                form.find('input[name="command"]').val('');
 
                 // Update the history section
                 var history = $('.history');  // Select the correct history section

@@ -13,7 +13,7 @@
 
 <!-- Display status counts at the top -->
 <div class="status-count">
-    <p><strong>Open:</strong> <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <p style="background-color: #faebd7; padding: 10px;"><strong>Open:</strong> <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <strong>In Progress:</strong><span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <strong>Re-open:</strong><span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <strong>Close:</strong><span style="color: grey;">  {{ close_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -69,7 +69,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="bugModalLabel{{ bug.id }}">Bug Details</h5>
+                    <h5 class="modal-title" id="bugModalLabel{{ bug.id }}" style="color: #b8253b;">Bug Detail</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -78,9 +78,29 @@
                     <p><strong>ID:</strong> {{ bug.bug_id }}</p>
                     <p><strong>Title:</strong> {{ bug.title }}</p>
                     <p><strong>Description:</strong> {{ bug.description }}</p>
-                    <p><strong>Status:</strong> {{ bug.status }}</p>
+
+                    <!-- Display the uploaded image -->
+            {% if bug.images %}
+    <p ><strong>Image:</strong></p>
+    <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
+        <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image">
+    </a>
+{% endif %}
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img src="" alt="Bug Image" class="img-fluid" id="largeImage">
+            </div>
+        </div>
+    </div>
+</div>
+
+                    <p style="margin-top: 20px;"><strong>Status:</strong> {{ bug.status }}</p>
                     <div class="form-group">
-        <label for="command"><strong>Commands:</strong></label>
+        <label for="command"><strong>Comments:</strong></label>
         <input type="text" class="form-control" name="command" id="commandInput">
     </div>
 
@@ -93,8 +113,8 @@
                         <option value="{{ choice.0 }}">{{ choice.1 }}</option>
                         {% endfor %}
                     </select>
-                    <input type="hidden" id="command" name="command" value="{{ command }}">
-                    <button style="background-color: #2b4a6a; padding: 4px 12px 4px 12px; margin-left: 165px;
+                    <input type="hidden" id="command" name="command" value="{{ bug.command }}">
+                    <button style="background-color: #2b4a6a; padding: 4px 12px 4px 12px; margin-left: 450px;
     font-size: 14px;" type="submit" class="btn btn-primary">Update</button>
                 </form>
                     <!-- Success message container -->
@@ -102,7 +122,7 @@
 
                 </div>
                 <div class="modal-footer">
-                 <div class="history" >
+                 <div class="history"  style="flex: 100%;">
                     <p style="border-bottom: 2px solid #ccc;"><strong>History:</strong></p>
 <pre >{{ bug.history }}</pre>
                 </div>

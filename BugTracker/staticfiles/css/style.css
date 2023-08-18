@@ -81,21 +81,5 @@ th, td {
     padding: 10px;
 }
 
-/* Define fixed width for each column */
-th:nth-child(1),
-td:nth-child(1) {
-    width: 10%;
-}
 
-th:nth-child(2),
-td:nth-child(2) {
-    width: 60%;
-}
 
-.history {
-    padding-top: 10px;
-}
-
-.history div {
-    margin-bottom: 10px; /* Add some space between history entries */
-}

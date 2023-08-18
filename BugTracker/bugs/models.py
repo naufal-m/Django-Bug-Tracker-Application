@@ -1,12 +1,14 @@
 from django.db import models
 from datetime import datetime
 from django.utils.text import slugify
+# from bugs.models import Bug
 
 # Create your models here.
 class Project(models.Model):
     name = models.CharField(max_length=100)
 
     code = models.CharField(max_length=3, blank=True, editable=False)
+    created_at = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return self.name
@@ -33,6 +35,7 @@ class Bug(models.Model):
     history = models.TextField(blank=True)
     # created_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(default=datetime.now)
+    images = models.ImageField(upload_to='bug_images/', blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -49,4 +52,9 @@ class Bug(models.Model):
 
         super(Bug, self).save(*args, **kwargs)
 
+class Image(models.Model):
+    bug = models.ForeignKey('bugs.Bug', related_name='bug_images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='bug_images/')
 
+    def __str__(self):
+        return f"Image for Bug {self.bug.id}"

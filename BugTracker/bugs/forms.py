@@ -4,7 +4,7 @@ from .models import Bug, Project
 class BugForm(forms.ModelForm):
     class Meta:
         model = Bug
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'images']
         exclude = ['bug_id']
 
 class ProjectForm(forms.ModelForm):
