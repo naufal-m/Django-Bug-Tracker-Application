@@ -13,11 +13,11 @@
 
 <!-- Display status counts at the top -->
 <div class="status-count">
-    <p style="background-color: #faebd7; padding: 10px;"><strong>Open:</strong> <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>In Progress:</strong><span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>Re-open:</strong><span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>Close:</strong><span style="color: grey;">  {{ close_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>Done:</strong> <span style="color: green;">  {{ done_count }}</span></p>
+    <p style="background-color: #faebd7; padding: 10px;">Open:</strong> <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        In Progress:<span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Re-open:<span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Close:<span style="color: grey;">  {{ close_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Done:<span style="color: green;">  {{ done_count }}</span></p>
 <!--    <ul>-->
 <!--        <li>Open: {{ open_count }}</li>-->
 <!--        <li>In Progress: {{ in_progress_count }}</li>-->
@@ -38,12 +38,13 @@
         <option value="Done">Done</option>
     </select>
     <div class="create_bug_link">
-        <a style="color: #b8253b;" href="{% url 'create_bug' project_id=project_id %}">Create New</a>
+        <a style="color: #2b4a6a;" href="{% url 'create_bug' project_id=project_id %}"><strong>Create New</strong></a>
     </div>
 </div>
 
+<div class="table-container">
         <table class="table m" >
-        <thead>
+        <thead class="table-header">
             <tr class="table-row">
                 <th>Bug_ID</th>
                 <th>Title</th>
@@ -135,6 +136,10 @@
     </div>
 {% endfor %}
     </table>
-<!--    <a href="{% url 'create_bug' project_id=project_id %}">Create New Bug</a>-->
+    </div>
+
+<p style="margin-top: 10px;"> <a  href="{% url 'generate_pdf_report' project_id=project_id %}" class="btn-custom-report" >
+    Click here to download the report</a></p>
+
 {% endblock %}
 

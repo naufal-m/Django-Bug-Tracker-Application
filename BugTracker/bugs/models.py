@@ -1,7 +1,6 @@
 from django.db import models
 from datetime import datetime
 from django.utils.text import slugify
-# from bugs.models import Bug
 
 # Create your models here.
 class Project(models.Model):

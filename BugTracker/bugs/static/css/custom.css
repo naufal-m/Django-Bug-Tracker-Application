@@ -7,6 +7,7 @@ body {
 
 body p {
     font-weight: 600;
+    padding-bottom:5px;
 }
 
 input[type="file"] {
@@ -130,3 +131,53 @@ td:nth-child(2) {
     padding: 0.50rem
 }
 
+/* CSS for the table container */
+.table-container {
+    max-height: 300px; /* Set your desired fixed height */
+    overflow-y: auto; /* Add vertical scroll if content overflows */
+    border: 0px solid #ccc; /* Add borders for visual separation */
+}
+
+/* CSS for the table to maintain width */
+.table {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.table-header {
+    position: sticky;
+    top: -1px;
+    background-color: #f1f1f1; /* Set your desired background color */
+}
+
+/* Webkit-based browsers (Chrome, Safari) */
+.table-container::-webkit-scrollbar {
+    width: 6px; /* Adjust the width as needed */
+    height: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background-color: #999; /* Set the color of the thumb */
+    border-radius: 6px; /* Round the thumb */
+}
+
+/* Firefox */
+.table-container {
+    scrollbar-width: thin; /* Adjust the width as needed */
+}
+
+.table-container {
+    scrollbar-color: #999 transparent; /* Set the colors of the thumb and track */
+}
+
+.btn-custom-report {
+    /* padding: 4px 10px 4px 10px;*/
+    color: #2b4a6a;
+    /* background-color: #2b4a6a;
+    border-color: #2b4a6a; */
+}
+.btn-custom-report:hover {
+    color: #000000;
+    /* background-color: #000000;
+    border-color: #000000; */
+}
