@@ -29,6 +29,7 @@ class Bug(models.Model):
     bug_id = models.CharField(max_length=10, unique=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
+    reporter = models.CharField(max_length=150)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
     command = models.TextField(blank=True)
     history = models.TextField(blank=True)

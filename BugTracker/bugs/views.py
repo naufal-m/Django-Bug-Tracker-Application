@@ -97,7 +97,7 @@ def create_bug(request, project_id):
         if form.is_valid():
             bug = form.save(commit=False)
             bug.project_id = project_id # Set the project_id for the bug
-            bug.created_by = request.user
+            bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
             bug.save()
             return redirect('bug_list', project_id=project_id)
     else:
@@ -129,16 +129,6 @@ def update_bug_status(request, bug_id):
 # Update the bug status
         bug.status = new_status
         bug.save()
-
-        # # Get the currently logged-in user's username
-        # user_username = request.user.username
-        #
-        # # Include user information in the context
-        # context = {
-        #     'bug': bug,
-        #     'user_username': user.username,
-        #     'formatted_time': formatted_time
-        # }
 
         success_message = f'Bug status updated to {new_status}'
         history_entry = f'{formatted_time}: Status updated to {new_status}, Comment: {command}'
@@ -243,7 +233,8 @@ def generate_pdf_report(request, project_id):
             'Title',
             'Description',
             'Status',
-            'Created At'
+            'Created At',
+            'Created By',
         ]
     ]
 
@@ -260,7 +251,8 @@ def generate_pdf_report(request, project_id):
             title_wrapped,
             description_wrapped,
             bug.status,
-            bug.created_at.strftime('%d-%m-%Y %I:%M %p')
+            bug.created_at.strftime('%d-%m-%Y %I:%M %p'),
+            bug.reporter
         ])
 
     # col_widths = [50, 200,None, None,None]
