@@ -18,8 +18,31 @@ from reportlab.lib.units import inch
 from django.db.models import F
 import textwrap
 
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('project_list')  # Redirect to your project_list view
+    else:
+        form = UserCreationForm()
+    return render(request, 'bugs/signup.html', {'form': form})
+
+
+class CustomLoginView(LoginView):
+    template_name = 'bugs/login.html'  # Replace with the actual template path
+    def form_valid(self, form):
+        login(self.request, form.get_user())
+        return redirect('project_list')  # Redirect to the 'project_list' page
 def project_list(request):
     projects = Project.objects.all()
     for project in projects:
@@ -67,20 +90,22 @@ def bug_list(request, project_id):
         'done_count': done_count,
     })
 
-
+@login_required
 def create_bug(request, project_id):
     if request.method == 'POST':
         form = BugForm(request.POST, request.FILES)
         if form.is_valid():
             bug = form.save(commit=False)
             bug.project_id = project_id # Set the project_id for the bug
+            bug.created_by = request.user
             bug.save()
             return redirect('bug_list', project_id=project_id)
     else:
         form = BugForm()
         project = Project.objects.get(id=project_id)
-    return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name, 'project_id': project_id})
-
+    return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name,
+                                                    'project_id': project_id})
+@login_required
 def update_bug_status(request, bug_id):
     if request.method == 'POST':
         bug = Bug.objects.get(id=bug_id)
@@ -96,12 +121,24 @@ def update_bug_status(request, bug_id):
         # current_time = timezone.localtime(timezone.now())
         formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
 
-        new_history = f"{current_history}\n{formatted_time}: Status updated to {new_status}, Comment: {command}"  # Add the new command to the history
+        # Add the new command to the history
+        new_history = f"{current_history}\n{formatted_time}: Status updated to {new_status}, Comment: {command}"
+
         bug.history = new_history
 
 # Update the bug status
         bug.status = new_status
         bug.save()
+
+        # # Get the currently logged-in user's username
+        # user_username = request.user.username
+        #
+        # # Include user information in the context
+        # context = {
+        #     'bug': bug,
+        #     'user_username': user.username,
+        #     'formatted_time': formatted_time
+        # }
 
         success_message = f'Bug status updated to {new_status}'
         history_entry = f'{formatted_time}: Status updated to {new_status}, Comment: {command}'

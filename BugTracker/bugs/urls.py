@@ -3,6 +3,8 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+path('auth/signup/', views.signup, name='signup'),
+    path('auth/login/', views.CustomLoginView.as_view(), name='login'),
 path('projects/', views.project_list, name='project_list'),
 path('delete/<int:project_id>/', views.delete_project, name='delete_project'),
     path('projects/create/', views.create_project, name='create_project'),
