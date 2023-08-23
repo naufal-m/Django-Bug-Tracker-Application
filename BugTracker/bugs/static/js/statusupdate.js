@@ -4,16 +4,11 @@ $(document).ready(function () {
         event.preventDefault();
 
         var form = $(this);
-        var formData = form.serialize();
-//        var formdata = new FormData(form[0]);
+        var formData = new FormData(form[0]);
         var url = form.attr('action');
         var command = form.find('input[name="command"]').val(); // Get the command value
 
-        // Add the command to the formData
-        formData += '&command=' + encodeURIComponent(command);
-
-        // Append the command to the FormData object
-//        formData.append('command', command);
+        formData.append('command', command);    // Append the command
 
         console.log('Command Value:', command);
 
@@ -21,8 +16,8 @@ $(document).ready(function () {
             type: 'POST',
             url: url,
             data: formData,
-//            processData: false,  // Don't process the data
-//            contentType: false,  // Don't set content type
+            contentType: false,  // set content type to false for FormData
+            processData: false,  // Disable processData for FormData
             success: function (data) {
                 // Update the success message in the modal body
                 var modal = form.closest('.modal');
@@ -32,11 +27,21 @@ $(document).ready(function () {
                 // Clear the command field
                 form.find('input[name="command"]').val('');
 
-                // Update the history section
-                var history = $('.history');  // Select the correct history section
-//                var historyEntry = '<p>' + data.history_entry + '</p>';
-                var historyEntry = $('<div>').text(data.history_entry);
-                history.append(historyEntry);
+//                // Update the history section
+//                var bugHistoryString = document.getElementById('bugHistory').textContent;
+//                var bugHistoryArray = bugHistoryString.split('\n'); // Split history string by line breaks
+//
+//                var history = $('.history');  // Select the correct history section
+//
+//                var historyEntry = $('<div>').text(data.history_entry);
+//
+//                for (var i = 0; i < bugHistoryArray.length; i++) {
+//                    var historyEntryText = bugHistoryArray[i];
+//                    if (historyEntryText.trim() !== '') {
+//                        var historyEntry = $('<div>').addClass('history-entry').text(historyEntryText);
+//                        history.append(historyEntry);
+//                    }
+//                }
 
                 // Close the modal after a delay
                 setTimeout(function () {

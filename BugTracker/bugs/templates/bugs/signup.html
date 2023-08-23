@@ -5,20 +5,55 @@
     <title>Signup</title>
 
     {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/access.css' %}">
+
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
 </head>
 <body>
 
-<div class="container">
-<form method="post">
-    {% csrf_token %}
-        {{ form.as_p }}
-    <button type="submit">Sign Up</button>
+<div class="container access-page">
+    <form method="post" action="{% url 'signup' %}">
+        {% csrf_token %}
 
-<p> Already have an account? <a href='{% url "login" %}'>Log in</a></p>
+        <h2 style="margin-bottom: 30px; color: #b8253b;">Signup Here</h2>
+
+        <label class="access-label" for="username">Username</label><br>
+<!--        <input class="form-field" type="text" placeholder="Enter Username" name="username" id="username" required="required"><br>-->
+        {{ form.username }}<br>
+
+        <label class="access-label" for="email">Email</label><br>
+<!--        <input class="form-field" type="email" placeholder="Enter your email" name="email" id="email" required="required"><br>-->
+        {{ form.email }}<br>
+
+        <label class="access-label" for="password1">Password</label><br>
+<!--        <input class="form-field" type="password" placeholder="Enter Password" name="password1" id="password1" required="required"><br>-->
+        {{ form.password1 }}<br>
+
+        <label class="access-label" for="password2">Confirm Password</label><br>
+<!--        <input class="form-field" type="password" placeholder="Confirm Password" name="password2" id="password2" required="required"><br>-->
+        {{ form.password2 }}<br>
+
+        <button type="submit">Sign Up</button>
+
+        <p> Already have an account? <a href='{% url "login" %}'>Login</a></p>
+
     </form>
+
+    <div id="hideMeAfter5Seconds">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
+
+</div>
 
 </body>
 </html>

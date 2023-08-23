@@ -5,19 +5,41 @@
     <title>Login</title>
 
     {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/access.css' %}">
+<!--    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
+
+    <script src="{% static 'js/accesserrormessage.js' %}"></script>
 </head>
 <body>
 
-<div class="container">
-<form method="post">
-    {% csrf_token %}
-        {{ form.as_p }}
-    <button type="submit">Log in</button>
-</form>
+<div class="container access-page form-group">
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <h2 style="margin-bottom: 30px; color: #b8253b;">Login Here</h2>
 
-<p> Don't have an account? <a href='{% url "signup" %}'>Sign up</a></p>
+        <div id="hideMeAfter5Seconds">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <label class="access-label" for="username">Username</label><br>
+        <input class="form-field" type="text" placeholder="Enter username" name="username" id="username" required="required"><br>
+
+        <label class="access-label" for="password">Password</label><br>
+        <input class="form-field" type="password" placeholder="Enter Password" name="password" id="password" required="required"><br>
+
+        <button type="submit">Log in</button>
+
+        <p style="font-weight: 600;"> Don't have an account? <a href='{% url "signup" %}'>Sign up</a></p>
+        <p style="font-weight: 600; margin-left: -10px;"><a href='{% url "changepassword" %}'>Forgot Password</a></p>
+
+    </form>
 </div>
 
 </body>

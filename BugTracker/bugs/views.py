@@ -1,6 +1,7 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Bug, Project
-from .forms import BugForm, ProjectForm
+from .forms import BugForm, ProjectForm, Project, SignUpForm
 from django.http import JsonResponse, HttpResponse
 from datetime import datetime
 from django.utils import timezone
@@ -9,40 +10,76 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from io import BytesIO
 
-from reportlab.lib.pagesizes import letter, landscape, portrait,A4
+from reportlab.lib.pagesizes import letter, landscape, portrait, A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, LongTable, PageBreak, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-
 from django.db.models import F
 import textwrap
 
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.views.generic import TemplateView
 
 
 # Create your views here.
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('project_list')  # Redirect to your project_list view
+
+            #   new line added
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            form.save()
+            new_user = authenticate(username=username, password=password)
+            if new_user is not None:
+                login(request, new_user)
+                return redirect('login')
+
+            # user = form.save()
+            # login(request, user)
+            # return redirect('login')  # Redirect to your project_list view
+        else:
+            print(form.errors)
+            # Display error messages if form is not valid
+            for field_name, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error in {form.fields[field_name].label}: {error}")
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
     return render(request, 'bugs/signup.html', {'form': form})
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(LoginView, TemplateView):
     template_name = 'bugs/login.html'  # Replace with the actual template path
     def form_valid(self, form):
         login(self.request, form.get_user())
         return redirect('project_list')  # Redirect to the 'project_list' page
+    def form_invalid(self, form):
+        messages.error(self.request, "Login failed, Username or password is incorrect.")
+        return super().form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        response = super(LoginView, self).get(request, *args, **kwargs)
+        messages = self.request.session.get('messages', [])  # Get messages from session
+        self.request.session['messages'] = []  # Clear messages from session
+        response.context_data['messages'] = messages  # Add messages to the template context
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        return response
+
+def ChangePassword(request):
+    return render(request, 'bugs/change-password.html')
+
+def ResetPassword(request):
+    return render(request,'bugs/reset-password.html')
+
 def project_list(request):
     projects = Project.objects.all()
     for project in projects:
@@ -68,6 +105,8 @@ def create_project(request):
     return render(request, 'bugs/create_project.html', {'form': form})
 def bug_list(request, project_id):
     # bugs = Bug.objects.all()
+    # bugs = Bug.objects.filter(project_id=project_id, reporter=request.user.username)
+    # reporter=request.user.username --> indicates the bug list of created user after logged in.
     bugs = Bug.objects.filter(project_id=project_id)
     project = Project.objects.get(id=project_id)
 
@@ -80,15 +119,12 @@ def bug_list(request, project_id):
 
     return render(request, 'bugs/bug_list.html', {'bugs': bugs, 'project_name': project.name,
                                                   'project_id': project_id,
-
-    # return render(request, 'bugs/bug_list.html', {
-        # ... your existing context ...
-        'open_count': open_count,
-        'in_progress_count': in_progress_count,
-        'reopen_count': reopen_count,
-        'close_count': close_count,
-        'done_count': done_count,
-    })
+                                                  'open_count': open_count,
+                                                  'in_progress_count': in_progress_count,
+                                                  'reopen_count': reopen_count,
+                                                  'close_count': close_count,
+                                                  'done_count': done_count,
+                                                  })
 
 @login_required
 def create_bug(request, project_id):
@@ -96,7 +132,7 @@ def create_bug(request, project_id):
         form = BugForm(request.POST, request.FILES)
         if form.is_valid():
             bug = form.save(commit=False)
-            bug.project_id = project_id # Set the project_id for the bug
+            bug.project_id = project_id     # Set the project_id for the bug
             bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
             bug.save()
             return redirect('bug_list', project_id=project_id)
@@ -111,6 +147,7 @@ def update_bug_status(request, bug_id):
         bug = Bug.objects.get(id=bug_id)
         new_status = request.POST.get('status')
         command = request.POST.get('command', '')
+        bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
         current_history = bug.history or ''  # Get the current history or initialize as an empty string
 
         # Convert the current time to the desired timezone
@@ -122,17 +159,20 @@ def update_bug_status(request, bug_id):
         formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
 
         # Add the new command to the history
-        new_history = f"{current_history}\n{formatted_time}: Status updated to {new_status}, Comment: {command}"
+        new_history = (f"{current_history}\n{bug.update}  {formatted_time}:\nStatus updated to {new_status}, "
+                       f"Comment: {command}")
 
+        bug.command = command
         bug.history = new_history
 
-# Update the bug status
+        # Update the bug status
         bug.status = new_status
         bug.save()
 
         success_message = f'Bug status updated to {new_status}'
-        history_entry = f'{formatted_time}: Status updated to {new_status}, Comment: {command}'
-        return JsonResponse({'status': 'success', 'message': success_message, 'history_entry': history_entry})
+        history_entry = (f'{bug.update}  {formatted_time}: \nStatus updated to {new_status}, Comment: {bug.command}')
+        return JsonResponse({'status': 'success', 'message': success_message,
+                             'history_entry': history_entry})
 
 # def download_bug_report(request, project_id):
 #     # project = Project.objects.get(id=project_id)  # Get the project

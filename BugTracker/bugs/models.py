@@ -1,8 +1,9 @@
-from django.db import models
 from datetime import datetime
 from django.utils.text import slugify
+from django.db import models
 
-# Create your models here.
+
+
 class Project(models.Model):
     name = models.CharField(max_length=100)
 

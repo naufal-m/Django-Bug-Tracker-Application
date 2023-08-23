@@ -181,3 +181,32 @@ td:nth-child(2) {
     /* background-color: #000000;
     border-color: #000000; */
 }
+
+input [type="password"]
+ #id_password {
+    padding: 6px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-left: 10px;
+}
+
+.history {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.history-entry {
+    padding: 10px;
+    position: relative;
+}
+
+.history-entry::before {
+    content: "";
+    position: absolute; /* Add this line */
+    top: 0;
+    left: 0;
+    width: 100%;
+    border-top: 1px solid #ccc;
+}

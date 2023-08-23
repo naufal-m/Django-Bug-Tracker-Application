@@ -20,10 +20,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('', include('bugs.urls')),
     path('admin/', admin.site.urls),
-        path('bugs/', include('bugs.urls')),
-        path('projects/', include('bugs.urls')),
-        path('create/', include('bugs.urls')),
+    path('bugs/', include('bugs.urls')),
+    path('projects/', include('bugs.urls')),
+    path('create/', include('bugs.urls')),
 ]
 
 if settings.DEBUG:
