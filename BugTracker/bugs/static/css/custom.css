@@ -71,7 +71,7 @@ td:nth-child(1) {
 
 th:nth-child(2),
 td:nth-child(2) {
-    width: 45%;
+    width: 30%;
 }
 
 .history {

@@ -42,10 +42,11 @@ class BugForm(forms.ModelForm):
         fields = ['title', 'description', 'images', 'assigned_to']
         exclude = ['bug_id']
 
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user')  # Remove the 'user' keyword argument
+    def __init__(self, project, *args, **kwargs):
+        # user = kwargs.pop('user')  # Remove the 'user' keyword argument
         super().__init__(*args, **kwargs)
-        self.fields['assigned_to'].queryset = User.objects.exclude(email=user.email)
+        # self.fields['assigned_to'].queryset = User.objects.exclude(email=user.email)
+        self.fields['assigned_to'].queryset = project.users.all()
 
 class ProjectForm(forms.ModelForm):
     users = forms.CharField(
@@ -54,5 +55,5 @@ class ProjectForm(forms.ModelForm):
     )
     class Meta:
         model = Project
-        fields = ['name', 'users']
+        fields = ['name', 'description', 'users']
 

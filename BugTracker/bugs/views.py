@@ -1,6 +1,7 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.db.models import Q
 
 from .models import Bug, Project, Profile
 from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm
@@ -46,6 +47,7 @@ def signup(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             form.save()
+
             new_user = authenticate(username=username, password=password)
             if new_user is not None:
                 login(request, new_user)
@@ -130,10 +132,16 @@ def ResetPassword(request,token):
 
 @login_required
 def project_list(request):
-    projects = Project.objects.all()
-    for project in projects:
-        project.code = project.name[:3].upper()
+    user = request.user
+    # projects = Project.objects.all()
+
+    projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
+
+    # for project in user_projects:
+    #     project.code = project.name[:3].upper()
+
     return render(request,  'bugs/project_list.html', {'projects': projects})
+
 
 @login_required
 def delete_project(request, project_id):
@@ -153,8 +161,41 @@ def create_project(request):
             email_list = [email.strip() for email in form.cleaned_data['users'].split(',')]
             users = User.objects.filter(email__in=email_list)
             project = form.save(commit=False)
+            project.created_user = request.user
             project.save()
             project.users.set(users)  # Associate users with the project
+
+            # project.users.clear()  # Clear previously added users (if any)
+
+            # Get the list of email addresses added in the 'users' field
+            user_emails = form.cleaned_data['users'].split(',')
+
+            for email in user_emails:
+                email = email.strip()  # Remove extra spaces
+
+                # Check if the email corresponds to a registered user
+                try:
+                    user = User.objects.get(email=email)
+                    # Send email to registered users
+                    login_url = reverse('login')  # Replace 'login' with your actual login URL name
+                    subject = 'Invitation to Project access'
+                    message = (f'Hello {user.username}\n,{project.created_user} has been added you in the '
+                               f'project {project.name}.Please log in to access your '
+                               f'project: {settings.BASE_URL}{login_url}')
+                    from_email = settings.EMAIL_HOST_USER
+                    recipient_list = [email]
+                    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                except User.DoesNotExist:
+                    # Send email to unregistered users
+                    signup_url = reverse('signup')
+                    subject = 'Invitation to Register'
+                    message = (f'{project.created_user} send an invitation to register for our app to access to '
+                               f'the Project {project.name}. Please click the following link to register first: '
+                               f'{settings.BASE_URL}{signup_url}')
+                    from_email = settings.EMAIL_HOST_USER
+                    recipient_list = [email]
+                    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
 
             return redirect('project_list')
     else:
@@ -187,8 +228,11 @@ def bug_list(request, project_id):
 
 @login_required
 def create_bug(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
     if request.method == 'POST':
-        form = BugForm(request.POST, request.FILES, user=request.user)
+        # form = BugForm(request.POST, request.FILES, user=request.user)
+        form = BugForm(project, request.POST, request.FILES)
         if form.is_valid():
             bug = form.save(commit=False)
             bug.project_id = project_id     # Set the project_id for the bug
@@ -213,7 +257,9 @@ def create_bug(request, project_id):
 
             return redirect('bug_list', project_id=project_id)
     else:
-        form = BugForm(user=request.user)
+        # form = BugForm(user=request.user)
+        form = BugForm(project=project)
+
         project = Project.objects.get(id=project_id)
     return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name,
                                                     'project_id': project_id})

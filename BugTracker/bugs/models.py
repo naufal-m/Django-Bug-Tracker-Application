@@ -14,9 +14,11 @@ class Profile(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
     code = models.CharField(max_length=3, blank=True, editable=False)
     created_at = models.DateTimeField(default=datetime.now)
     users = models.ManyToManyField(User, related_name='projects')
+    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_projects')
 
     def __str__(self):
         return self.name
