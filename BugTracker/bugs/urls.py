@@ -6,8 +6,8 @@ urlpatterns = [
     path('auth/signup/', views.signup, name='signup'),
     path('auth/login/', views.CustomLoginView.as_view(), name='login'),
 
-    path('bugs/change-password/', views.ChangePassword, name='changepassword'),
-    path('bugs/reset-password/', views.ResetPassword, name='resetpassword'),
+    path('bugs/auth/change-password/', views.change_password, name='changepassword'),
+    path('bugs/reset-password/<token>', views.ResetPassword, name='resetpassword'),
 
     path('projects/', views.project_list, name='project_list'),
     path('delete/<int:project_id>/', views.delete_project, name='delete_project'),

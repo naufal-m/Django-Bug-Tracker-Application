@@ -1,8 +1,10 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Bug, Project
-from .forms import BugForm, ProjectForm, Project, SignUpForm
-from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+
+from .models import Bug, Project, Profile
+from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from datetime import datetime
 from django.utils import timezone
 import pytz, csv, xlsxwriter
@@ -20,11 +22,17 @@ import textwrap
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.views import LoginView
+from django.contrib.auth import authenticate, login, password_validation
+from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import TemplateView
+
+from .helpers import send_forget_password_mail
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+import uuid
 
 
 # Create your views here.
@@ -42,10 +50,6 @@ def signup(request):
             if new_user is not None:
                 login(request, new_user)
                 return redirect('login')
-
-            # user = form.save()
-            # login(request, user)
-            # return redirect('login')  # Redirect to your project_list view
         else:
             print(form.errors)
             # Display error messages if form is not valid
@@ -74,19 +78,64 @@ class CustomLoginView(LoginView, TemplateView):
         response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         return response
 
-def ChangePassword(request):
-    return render(request, 'bugs/change-password.html')
+def change_password(request):
 
-def ResetPassword(request):
-    return render(request,'bugs/reset-password.html')
+    if request.method == 'POST':
+        form = ForgotPassword(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            try:
 
+                user = User.objects.get(email=email)
+                user_id = user.id
+                print(user_id)
+
+                token = str(uuid.uuid4())
+
+                #   check if a profile already exist for the user
+                try:
+                    profile = Profile.objects.get(user_id=user_id)
+                except Profile.DoesNotExist:
+                    print("Hello")
+                    # Save the token and related information to the Profile model
+                    # profile = Profile(user=user)
+                    profile = Profile.objects.create(user=user, forget_password_token=token, created_at=datetime.now())
+                    profile.save()
+
+                profile.forget_password_token = token
+                profile.created_at = datetime.now()
+                profile.save()
+
+                send_forget_password_mail(email, token)
+
+                messages.success(request, 'An email has been sent.')
+
+            except User.DoesNotExist:
+                print("User not found")
+
+    else:
+        form = ForgotPassword()
+    return render(request, 'bugs/change-password.html', {'form': form})
+
+def ResetPassword(request,token):
+    valid_token = True
+    profile_obj = Profile.objects.get(forget_password_token=token)
+    print(profile_obj)
+
+    context = {
+        'valid_token': valid_token,
+        'form': PasswordResetForm
+    }
+    return render(request, 'bugs/reset-password.html', context)
+
+@login_required
 def project_list(request):
     projects = Project.objects.all()
     for project in projects:
         project.code = project.name[:3].upper()
     return render(request,  'bugs/project_list.html', {'projects': projects})
 
-
+@login_required
 def delete_project(request, project_id):
     if request.method == 'POST':
         project = Project.objects.get(id=project_id)
@@ -94,15 +143,25 @@ def delete_project(request, project_id):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
+@login_required
 def create_project(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
         if form.is_valid():
-            form.save()
+
+            # Parse the entered emails and associate users with the project
+            email_list = [email.strip() for email in form.cleaned_data['users'].split(',')]
+            users = User.objects.filter(email__in=email_list)
+            project = form.save(commit=False)
+            project.save()
+            project.users.set(users)  # Associate users with the project
+
             return redirect('project_list')
     else:
         form = ProjectForm()
     return render(request, 'bugs/create_project.html', {'form': form})
+
+@login_required
 def bug_list(request, project_id):
     # bugs = Bug.objects.all()
     # bugs = Bug.objects.filter(project_id=project_id, reporter=request.user.username)
@@ -129,15 +188,32 @@ def bug_list(request, project_id):
 @login_required
 def create_bug(request, project_id):
     if request.method == 'POST':
-        form = BugForm(request.POST, request.FILES)
+        form = BugForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             bug = form.save(commit=False)
             bug.project_id = project_id     # Set the project_id for the bug
             bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
+            bug.assigned = form.cleaned_data['assigned_to']
             bug.save()
+
+            # Generate bug_link for the email
+            bug_list_url = reverse('bug_list', kwargs={'project_id': project_id})
+            bug_link = f"{settings.BASE_URL}{bug_list_url}?bug_id={bug.id}"
+
+            subject = "{} assigned a new bug: {}".format(bug.reporter, bug.title)
+            message = render_to_string('bug_emails/bug_email.html', {
+                'bug_link': bug_link,
+                'assigned_user': bug.assigned,  # Pass the user to the template
+                'bug': bug,  # Pass the bug instance to the template
+            })
+
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [bug.assigned.email]
+            send_mail(subject, "", from_email, recipient_list, html_message=message)
+
             return redirect('bug_list', project_id=project_id)
     else:
-        form = BugForm()
+        form = BugForm(user=request.user)
         project = Project.objects.get(id=project_id)
     return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name,
                                                     'project_id': project_id})
@@ -234,6 +310,7 @@ def update_bug_status(request, bug_id):
 #
 #     return response
 
+@login_required
 def generate_pdf_report(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     bugs = Bug.objects.filter(project=project)

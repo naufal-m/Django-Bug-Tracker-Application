@@ -17,8 +17,8 @@
         Open: <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         In Progress:<span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Re-open:<span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Close:<span style="color: grey;">  {{ close_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Done:<span style="color: green;">  {{ done_count }}</span></p>
+        Done:<span style="color: green;">  {{ done_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Close:<span style="color: grey;">  {{ close_count }}</span></p>
 </div>
 
 <div class="filter"  style="margin-top: 50px; margin-bottom: 10px; display: flex; align-items: center;">
@@ -44,6 +44,7 @@
                 <th>Status</th>
                 <th>Created On</th>
                 <th>Reporter</th>
+                <th>Assigned_to</th>
             </tr>
         </thead>
         <tbody>
@@ -54,6 +55,7 @@
                     <td>{{ bug.status }}</td>
                     <td>{{ bug.created_at }}</td>
                     <td>{{ bug.reporter }}</td>
+                    <td>{{ bug.assigned_to }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -75,14 +77,15 @@
                     </div>
 
                     <div class="modal-body">
-                        <p style="margin-bottom: 2px;">ID: {{ bug.bug_id }}</p>
-                        <p>Reported by: {{ bug.reporter }}</p>
-                        <p>Title:<br>{{ bug.title }}</p>
-                        <p>Description:<br>{{ bug.description }}</p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold;">ID: </span>&nbsp;&nbsp;{{ bug.bug_id }}</p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold;">Reported by: </span>&nbsp;&nbsp;{{ bug.reporter }}</p>
+                        <p><span style="font-weight:bold;">Assigned_to: </span>&nbsp;&nbsp;{{ bug.assigned_to }}</p>
+                        <p><span style="font-weight:bold;">Title:</span><br>{{ bug.title }}</p>
+                        <p><span style="font-weight:bold;">Description:</span><br>{{ bug.description }}</p>
 
                         <!-- Display the uploaded image -->
                         {% if bug.images %}
-                        <p>Image:</p>
+                        <p style="font-weight:bold;">Image:</p>
                         <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
                         <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image"></a>
                         {% endif %}
@@ -99,7 +102,7 @@
                             </div>
                         </div>
 
-                        <p style="margin-top: 20px;">Status: {{ bug.status }}</p>
+                        <p style="margin-top: 20px;"><span style="font-weight:bold;">Status: </span>&nbsp;&nbsp;{{ bug.status }}</p>
 
                         <!-- Add status edit form -->
                         <form class="update-status-form" method="post"

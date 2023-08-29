@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Email</title>
+</head>
+<body>
+    <p>Hi {{ assigned_user.username }},</p>
+    <p>A new bug has been assigned to you.</p>
+    <p>Bug ID: {{ bug.bug_id }},  Bug Title: {{ bug.title }}</p>
+    <p>Bug Description: {{ bug.description }}</p>
+    <p>You can view the bug details in the project's bug list:</p>
+    <a href="{{ bug_link }}">View Bug Details</a><br><br><br><br>
+    <p>Best regards,</p>
+    <p>Your Name</p>
+</body>
+</html>
