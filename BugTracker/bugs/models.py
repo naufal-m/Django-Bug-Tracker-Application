@@ -27,6 +27,8 @@ class Project(models.Model):
         if not self.code:
             self.code = slugify(self.name)[:3].upper()
         super().save(*args, **kwargs)
+
+
 class Bug(models.Model):
     STATUS_CHOICES = [
         ('Open', 'Open'),
@@ -42,8 +44,6 @@ class Bug(models.Model):
     description = models.TextField()
     reporter = models.CharField(max_length=150)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
-    command = models.TextField(blank=True)
-    history = models.TextField(blank=True)
     # created_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(default=datetime.now)
     images = models.ImageField(upload_to='bug_images/', blank=True, null=True)
@@ -70,3 +70,25 @@ class Image(models.Model):
 
     def __str__(self):
         return f"Image for Bug {self.bug.id}"
+
+class BugHistory(models.Model):
+    STATUS_CHOICES = [
+        ('Open', 'Open'),
+        ('In Progress', 'In Progress'),
+        ('Re-open', 'Re-open'),
+        ('Done', 'Done'),
+        ('Close', 'Close'),
+    ]
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    bug = models.ForeignKey(Bug, on_delete=models.CASCADE)  # Add this line to link BugHistory to Bug
+    bug_id_code = models.CharField(max_length=10, unique=False)
+    comments = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    updated_at = models.DateTimeField(default=datetime.now)
+    status_assigned_user = models.CharField(max_length=150)  # You may want to change the field type
+    report_user = models.ForeignKey(User, on_delete=models.CASCADE)  # Assuming User is your user model
+    images = models.ImageField(upload_to='bug_images/', blank=True, null=True)
+
+    def __str__(self):
+        return f'BugHistory for Bug {self.bug_id}'
+

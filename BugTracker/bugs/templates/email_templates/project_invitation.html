@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Invitation</title>
+</head>
+<body>
+
+    <p>Hi <span style="font-weight: bold;">{{ user }},</span></p>
+    <p><span style="font-weight: bold;">{{ project_created_user }}</span>
+        added you in a new project. Please check the below details</p><br>
+    <p><span style="font-weight: bold;">Project Name: </span>{{ project_name }}</p>
+    <p>Please log in to access your project:</p>
+    <a href="{{ login_link }}">Access to your project</a><br><br><br><br>
+    <p>Best regards,</p>
+    <p>{{ project_created_user }}</p>
+
+</body>
+</html>

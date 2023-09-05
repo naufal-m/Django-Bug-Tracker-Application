@@ -8,6 +8,8 @@
 {% block content %}
 <div  class="bread-crumb" >
     <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | {{ project_name }}-{{ user.username }}</p>
+    <p>{{ history_entries }}</p>
+
 </div>
 <h2 style="border-bottom: 2px solid #ccc;">Bug List</h2>
 
@@ -21,8 +23,9 @@
         Close:<span style="color: grey;">  {{ close_count }}</span></p>
 </div>
 
-<div class="filter"  style="margin-top: 50px; margin-bottom: 10px; display: flex; align-items: center;">
-    <select id="status-filter">
+<div class="filter"  style="margin-top: 50px; margin-bottom: 10px; display: flex; align-items: center; ">
+    <select style="border: 1px solid #ccc;
+                            border-radius: 4px; box-sizing: border-box;" id="status-filter">
         <option value="all">All</option>
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
@@ -30,6 +33,17 @@
         <option value="Close">Close</option>
         <option value="Done">Done</option>
     </select>
+
+    <div style="margin-left: 10px;">
+        <select style="padding-right: 15px; border: 1px solid #ccc;
+                            border-radius: 4px; box-sizing: border-box;" id="user-filter">
+            <option value="all">All Users</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="create_bug_link">
         <a style="color: #2b4a6a;" href="{% url 'create_bug' project_id=project_id %}"><strong>Create New</strong></a>
     </div>
@@ -49,7 +63,7 @@
         </thead>
         <tbody>
             {% for bug in bugs %}
-                <tr data-status="{{ bug.status }}">
+                <tr data-status="{{ bug.status }}" data-assigned="{{ bug.assigned_to.id }}">
                     <td><a style="color: #386fa7;" href="#" data-toggle="modal" data-target="#bugModal{{ bug.id }}">{{ bug.bug_id }}</a></td>
                     <td>{{ bug.title }}</td>
                     <td>{{ bug.status }}</td>
@@ -77,17 +91,17 @@
                     </div>
 
                     <div class="modal-body">
-                        <p style="margin-bottom: 2px;"><span style="font-weight:bold;">ID: </span>&nbsp;&nbsp;{{ bug.bug_id }}</p>
-                        <p style="margin-bottom: 2px;"><span style="font-weight:bold;">Reported by: </span>&nbsp;&nbsp;{{ bug.reporter }}</p>
-                        <p><span style="font-weight:bold;">Assigned_to: </span>&nbsp;&nbsp;{{ bug.assigned_to }}</p>
-                        <p><span style="font-weight:bold;">Title:</span><br>{{ bug.title }}</p>
-                        <p><span style="font-weight:bold;">Description:</span><br>{{ bug.description }}</p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">ID: </span>&nbsp;&nbsp;{{ bug.bug_id }}</p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Reported by: </span>&nbsp;&nbsp;{{ bug.reporter }}</p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Assigned_to: </span>&nbsp;&nbsp;{{ bug.assigned_to }}</p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Title:</span><br>{{ bug.title }}</p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Description:</span><br>{{ bug.description }}</p>
 
                         <!-- Display the uploaded image -->
                         {% if bug.images %}
-                        <p style="font-weight:bold;">Image:</p>
-                        <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
-                        <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image"></a>
+                            <p style="font-weight:bold; color: #2b4a6a;">Image:</p>
+                            <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
+                            <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image"></a>
                         {% endif %}
 
                         <!-- Image Modal -->
@@ -102,23 +116,29 @@
                             </div>
                         </div>
 
-                        <p style="margin-top: 20px;"><span style="font-weight:bold;">Status: </span>&nbsp;&nbsp;{{ bug.status }}</p>
+                        <p style="margin-top: 20px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;{{ bug.status }}</p>
 
                         <!-- Add status edit form -->
                         <form class="update-status-form" method="post"
-                              action="{% url 'update_bug_status' bug_id=bug.id %}">
+                              action="{% url 'update_bug_status' project_id=project_id bug_id=bug.id %}">
+
 
                             {% csrf_token %}
-
                             <div class="form-group">
-                                <label for="commandInput"><strong>Comments:</strong></label>
+                                <label for="commandInput"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span></label>
                                 <input type="text" class="form-control" name="command" id="commandInput">
                             </div>
 
-                            <label for="status"><strong>Change Status:</strong></label>
-                            <select name="status" id="status" style="margin-left: 5px;">
+                            <div class="form-group">
+                                <label for="images"><span style="font-weight:bold; color: #2b4a6a;">Images:</span></label>
+                                <input style="padding: 0px; font-size: 13px;" type="file" class="form-control-file" id="images" name="images">
+                            </div>
+
+                            <label for="status"><span style="font-weight:bold; color: #2b4a6a;">Change Status:</span></label>
+                            <select name="status" id="status" style="margin-left: 5px; border: 1px solid #ccc;
+                            border-radius: 4px; box-sizing: border-box; color:#323131;">
                                 {% for choice in bug.STATUS_CHOICES %}
-                                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
                                 {% endfor %}
                             </select>
 
@@ -133,8 +153,28 @@
 
                     <div class="modal-footer">
                         <div class="history"  style="flex: 100%;">
-                            <p style="border-bottom: 2px solid #ccc;"><strong>History:</strong></p>
-                            <pre id="bugHistory" style="border-bottom: 2px solid #ccc;">{{ bug.history }}</pre>
+                            <p style="border-bottom: 2px solid #ccc;">
+                                <span style="font-weight:bold; color: #2b4a6a;">History:</span>
+                            </p>
+                            {% for entry in bug_history_entries %}
+                                {% if entry.bug.project.id == project_id %}
+                                    {% if  entry.bug_id_code == bug.bug_id %}
+                                        <p><span style="font-weight:bold;">{{ entry.status_assigned_user }}</span>,
+                                            &nbsp;&nbsp;&nbsp;&nbsp;{{ entry.updated_at }}</p>
+                                        <p style="margin-top: -20px;"><span style="font-weight:bold;">Comments:</span>
+                                            &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and status changed to
+                                            <span style="font-weight:bold;">{{ entry.status }}</span></p>
+                                        {% if entry.images %}
+                                            <a href="{{ entry.images.url }}" data-lightbox="image-gallery">
+                                                <img src="{{ entry.images.url }}" alt="Bug Image" style="margin-top:-10px; margin-left: 5px; max-width: 500px; height: 200px;">
+                                            </a>
+                                        {% endif %}
+                                        <hr>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+<!--                            <pre id="bugHistory" style="border-bottom: 2px solid #ccc;">{{ bug.history }}</pre>-->
                         </div>
                     </div>
 

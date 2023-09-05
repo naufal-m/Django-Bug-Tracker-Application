@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Registration Access</title>
+</head>
+<body>
+
+    <p>Hi</p>
+    <p><span style="font-weight: bold;">{{ project_created_user }}</span>
+        has been sent you an invitation to register on our app to access to the project
+        <span style="font-weight: bold;">{{ project_name }}.</span>
+        Please check the below details</p><br>
+    <p><span style="font-weight: bold;">Project Name: </span>{{ project_name }}</p>
+    <p>Please register:</p>
+    <a href="{{ signup_link }}">Access to your project</a><br><br><br><br>
+    <p>Best regards,</p>
+    <p>{{ project_created_user }}</p>
+
+</body>
+</html>

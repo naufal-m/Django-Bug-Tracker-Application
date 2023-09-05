@@ -17,5 +17,5 @@ urlpatterns = [
     path('bugs/<int:project_id>/create/', views.create_bug, name='create_bug'),
     path('bugs/report/<int:project_id>/', views.generate_pdf_report, name='generate_pdf_report'),
     # path('bugs/download_bug_report/<int:project_id>/', views.download_bug_report, name='download_bug_report'),
-    path('bugs/<int:bug_id>/update_status/', views.update_bug_status, name='update_bug_status'),
+    path('bugs/<int:project_id>/update-status/<int:bug_id>/', views.update_bug_status, name='update_bug_status'),
 ]

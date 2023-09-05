@@ -4,3 +4,11 @@ $(document).ready(function () {
             $(this).find('#largeImage').attr('src', imageSource);
         });
     });
+
+//
+//lightbox.option({
+//        'resizeDuration': 200,
+//        'wrapAround': true
+//    })
+
+

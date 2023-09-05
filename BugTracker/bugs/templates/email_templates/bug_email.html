@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Email</title>
+</head>
+<body>
+
+    <p>Hi <span style="font-weight: bold;">{{ assigned_user.username }},</span></p>
+    <p><span style="font-weight: bold;">{{ created_user }}</span>
+        assigned a new bug to you. Please check the below details</p><br>
+    <p><span style="font-weight: bold;">Bug ID: </span>{{ bug.bug_id }},
+        <span style="font-weight: bold;">Bug Title: </span>{{ bug.title }}</p>
+    <p><span style="font-weight: bold;">Bug Description: </span>{{ bug.description }}</p>
+    <p>You can view the bug details in the project's bug list:</p>
+    <a href="{{ bug_link }}">View Bug Details</a><br><br><br><br>
+    <p>Best regards,</p>
+    <p>{{ created_user }}</p>
+
+</body>
+</html>

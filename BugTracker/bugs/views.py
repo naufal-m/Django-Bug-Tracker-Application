@@ -1,11 +1,14 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
+import json
 from django.urls import reverse
 from django.db.models import Q
+from django.template import Template, Context
+from django.utils.html import linebreaks
 
-from .models import Bug, Project, Profile
-from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm
+from .models import Bug, Project, Profile, Image, BugHistory
+from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm, UpdateBugForm
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 from datetime import datetime
 from django.utils import timezone
 import pytz, csv, xlsxwriter
@@ -29,7 +32,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import TemplateView
 
-from .helpers import send_forget_password_mail
+from .emails import (send_forget_password_mail, send_bug_assigned_email, send_registration_invitation_email,
+                     send_project_invitation_email)
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -65,9 +69,11 @@ def signup(request):
 
 class CustomLoginView(LoginView, TemplateView):
     template_name = 'bugs/login.html'  # Replace with the actual template path
+
     def form_valid(self, form):
         login(self.request, form.get_user())
         return redirect('project_list')  # Redirect to the 'project_list' page
+
     def form_invalid(self, form):
         messages.error(self.request, "Login failed, Username or password is incorrect.")
         return super().form_invalid(form)
@@ -80,8 +86,8 @@ class CustomLoginView(LoginView, TemplateView):
         response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         return response
 
-def change_password(request):
 
+def change_password(request):
     if request.method == 'POST':
         form = ForgotPassword(request.POST)
         if form.is_valid():
@@ -119,7 +125,8 @@ def change_password(request):
         form = ForgotPassword()
     return render(request, 'bugs/change-password.html', {'form': form})
 
-def ResetPassword(request,token):
+
+def ResetPassword(request, token):
     valid_token = True
     profile_obj = Profile.objects.get(forget_password_token=token)
     print(profile_obj)
@@ -129,6 +136,7 @@ def ResetPassword(request,token):
         'form': PasswordResetForm
     }
     return render(request, 'bugs/reset-password.html', context)
+
 
 @login_required
 def project_list(request):
@@ -140,7 +148,7 @@ def project_list(request):
     # for project in user_projects:
     #     project.code = project.name[:3].upper()
 
-    return render(request,  'bugs/project_list.html', {'projects': projects})
+    return render(request, 'bugs/project_list.html', {'projects': projects})
 
 
 @login_required
@@ -150,6 +158,7 @@ def delete_project(request, project_id):
         project.delete()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
+
 
 @login_required
 def create_project(request):
@@ -165,42 +174,27 @@ def create_project(request):
             project.save()
             project.users.set(users)  # Associate users with the project
 
-            # project.users.clear()  # Clear previously added users (if any)
-
             # Get the list of email addresses added in the 'users' field
             user_emails = form.cleaned_data['users'].split(',')
 
             for email in user_emails:
                 email = email.strip()  # Remove extra spaces
 
-                # Check if the email corresponds to a registered user
+                # Check if the email corresponds to a registered user or non register user
                 try:
                     user = User.objects.get(email=email)
                     # Send email to registered users
-                    login_url = reverse('login')  # Replace 'login' with your actual login URL name
-                    subject = 'Invitation to Project access'
-                    message = (f'Hello {user.username}\n,{project.created_user} has been added you in the '
-                               f'project {project.name}.Please log in to access your '
-                               f'project: {settings.BASE_URL}{login_url}')
-                    from_email = settings.EMAIL_HOST_USER
-                    recipient_list = [email]
-                    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                    send_project_invitation_email(project, user)
+
                 except User.DoesNotExist:
                     # Send email to unregistered users
-                    signup_url = reverse('signup')
-                    subject = 'Invitation to Register'
-                    message = (f'{project.created_user} send an invitation to register for our app to access to '
-                               f'the Project {project.name}. Please click the following link to register first: '
-                               f'{settings.BASE_URL}{signup_url}')
-                    from_email = settings.EMAIL_HOST_USER
-                    recipient_list = [email]
-                    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
+                    send_registration_invitation_email(project, email)
 
             return redirect('project_list')
     else:
         form = ProjectForm()
     return render(request, 'bugs/create_project.html', {'form': form})
+
 
 @login_required
 def bug_list(request, project_id):
@@ -217,14 +211,33 @@ def bug_list(request, project_id):
     close_count = Bug.objects.filter(project=project_id, status='Close').count()
     done_count = Bug.objects.filter(project=project_id, status='Done').count()
 
-    return render(request, 'bugs/bug_list.html', {'bugs': bugs, 'project_name': project.name,
-                                                  'project_id': project_id,
-                                                  'open_count': open_count,
-                                                  'in_progress_count': in_progress_count,
-                                                  'reopen_count': reopen_count,
-                                                  'close_count': close_count,
-                                                  'done_count': done_count,
-                                                  })
+    #   assigned user filter
+    assigned_filter = request.GET.get('assigned_filter')
+    if assigned_filter and assigned_filter != 'all':
+        bugs = bugs.filter(assigned_to=assigned_filter)
+
+    creator_user = project.created_user
+    associated_user = project.users.all()
+
+    combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
+    bug_history_entries = BugHistory.objects.all()
+    print("number or entries: ", bug_history_entries.count())
+
+    context = {
+        'bugs': bugs,
+        'project_name': project.name,
+        'project_id': project_id,
+        'users': combined_users,
+        'open_count': open_count,
+        'in_progress_count': in_progress_count,
+        'reopen_count': reopen_count,
+        'close_count': close_count,
+        'done_count': done_count,
+        'bug_history_entries': bug_history_entries
+    }
+
+    return render(request, 'bugs/bug_list.html', context)
+
 
 @login_required
 def create_bug(request, project_id):
@@ -235,25 +248,13 @@ def create_bug(request, project_id):
         form = BugForm(project, request.POST, request.FILES)
         if form.is_valid():
             bug = form.save(commit=False)
-            bug.project_id = project_id     # Set the project_id for the bug
+            bug.project_id = project_id  # Set the project_id for the bug
             bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
             bug.assigned = form.cleaned_data['assigned_to']
             bug.save()
 
-            # Generate bug_link for the email
-            bug_list_url = reverse('bug_list', kwargs={'project_id': project_id})
-            bug_link = f"{settings.BASE_URL}{bug_list_url}?bug_id={bug.id}"
-
-            subject = "{} assigned a new bug: {}".format(bug.reporter, bug.title)
-            message = render_to_string('bug_emails/bug_email.html', {
-                'bug_link': bug_link,
-                'assigned_user': bug.assigned,  # Pass the user to the template
-                'bug': bug,  # Pass the bug instance to the template
-            })
-
-            from_email = settings.EMAIL_HOST_USER
-            recipient_list = [bug.assigned.email]
-            send_mail(subject, "", from_email, recipient_list, html_message=message)
+            # Use the send_bug_assigned_email function to send the email
+            send_bug_assigned_email(bug)
 
             return redirect('bug_list', project_id=project_id)
     else:
@@ -263,38 +264,99 @@ def create_bug(request, project_id):
         project = Project.objects.get(id=project_id)
     return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name,
                                                     'project_id': project_id})
+
+
 @login_required
-def update_bug_status(request, bug_id):
+def update_bug_status(request, project_id, bug_id):
     if request.method == 'POST':
-        bug = Bug.objects.get(id=bug_id)
-        new_status = request.POST.get('status')
-        command = request.POST.get('command', '')
-        bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
-        current_history = bug.history or ''  # Get the current history or initialize as an empty string
+        form = UpdateBugForm(request.POST)
+        if form.is_valid():
+            bug = Bug.objects.get(id=bug_id)
+            project = get_object_or_404(Project, id=bug.project_id)
+            new_status = request.POST.get('status')
+            command = request.POST.get('command', '')
+            uploaded_image = request.FILES.get('images')
+            bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
 
-        # Convert the current time to the desired timezone
-        tz = pytz.timezone('Asia/Dubai')  # Replace with your desired timezone
-        current_time = timezone.localtime(timezone.now(), tz)
+            # Convert the current time to the desired timezone
+            tz = pytz.timezone('Asia/Dubai')  # Replace with your desired timezone
+            current_time = timezone.localtime(timezone.now(), tz)
+            formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
+            formatted_time_dt = datetime.strptime(formatted_time, '%d-%m-%Y, %I:%M %p')
+            formatted_time_dt = tz.localize(formatted_time_dt)
 
-        # timestamp = timezone.now()
-        # current_time = timezone.localtime(timezone.now())
-        formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
+            bug.save()
 
-        # Add the new command to the history
-        new_history = (f"{current_history}\n{bug.update}  {formatted_time}:\nStatus updated to {new_status}, "
-                       f"Comment: {command}")
+            # Create a new BugHistory entry
+            history_entry = BugHistory(
+                bug=bug,
+                project=project,
+                comments=command,
+                status=new_status,
+                updated_at=formatted_time_dt,
+                status_assigned_user=bug.update,
+                report_user=request.user,
+                bug_id_code=bug.bug_id,
+            )
+            history_entry.save()
 
-        bug.command = command
-        bug.history = new_history
+            # Handle image upload
+            if uploaded_image:
+                # Create a SimpleUploadedFile from the uploaded image
+                uploaded_image_file = SimpleUploadedFile(uploaded_image.name, uploaded_image.read())
+                history_entry.images.save(uploaded_image.name, uploaded_image_file)
 
-        # Update the bug status
-        bug.status = new_status
-        bug.save()
+            bug.status = new_status
+            bug.comment = command
+            bug.save()
 
-        success_message = f'Bug status updated to {new_status}'
-        history_entry = (f'{bug.update}  {formatted_time}: \nStatus updated to {new_status}, Comment: {bug.command}')
-        return JsonResponse({'status': 'success', 'message': success_message,
-                             'history_entry': history_entry})
+            context = {
+                'form': form,
+                'project_id': project_id,
+            }
+            return render(request, 'bugs/bug_list.html', context)
+
+            # return redirect('bug_list', project_id=project_id)
+
+    else:
+        form = UpdateBugForm()
+    return render(request, 'bugs/bug_list.html', {'form': form})
+
+
+
+# @login_required
+# def update_bug_status(request, bug_id):
+#     if request.method == 'POST':
+#         bug = Bug.objects.get(id=bug_id)
+#         new_status = request.POST.get('status')
+#         command = request.POST.get('command', '')
+#         bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
+#         current_history = bug.history or ''  # Get the current history or initialize as an empty string
+#
+#         # Convert the current time to the desired timezone
+#         tz = pytz.timezone('Asia/Dubai')  # Replace with your desired timezone
+#         current_time = timezone.localtime(timezone.now(), tz)
+#
+#         # timestamp = timezone.now()
+#         # current_time = timezone.localtime(timezone.now())
+#         formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
+#
+#         # Add the new command to the history
+#         new_history = (f"{current_history}\n{bug.update}  {formatted_time}:\nStatus updated to {new_status}, "
+#                        f"Comment: {command}")
+#
+#         bug.command = command
+#         bug.history = new_history
+#
+#         # Update the bug status
+#         bug.status = new_status
+#         bug.save()
+#
+#         success_message = f'Bug status updated to {new_status}'
+#         history_entry = (f'{bug.update}  {formatted_time}: \nStatus updated to {new_status}, Comment: {bug.command}')
+#         return JsonResponse({'status': 'success', 'message': success_message,
+#                              'history_entry': history_entry})
+
 
 # def download_bug_report(request, project_id):
 #     # project = Project.objects.get(id=project_id)  # Get the project
@@ -375,7 +437,7 @@ def generate_pdf_report(request, project_id):
     # Create a list to hold the data for the paragraphs
     paragraphs = [
         Paragraph(f'Project Name: {project.name}', getSampleStyleSheet()['Heading1']),
-        Paragraph(f'Status Count:', getSampleStyleSheet()[ 'Heading3']),
+        Paragraph(f'Status Count:', getSampleStyleSheet()['Heading3']),
         Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'Re-open:        {reopen_count}', getSampleStyleSheet()['Normal']),
@@ -426,14 +488,14 @@ def generate_pdf_report(request, project_id):
     # table = LongTable(data, colWidths=col_widths)
     style = TableStyle([
         ('BACKGROUND', (0, 1), (-1, 1), colors.grey),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-                        ('TEXTCOLOR', (0, 1), (-1, 1), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12)
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 1), (-1, 1), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12)
     ])
-                        # ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                        # ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+    # ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    # ('GRID', (0, 0), (-1, -1), 1, colors.black)])
 
     # Add line separators
     for i in range(1, len(data)):
@@ -450,3 +512,5 @@ def generate_pdf_report(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.pdf"'
 
     return response
+
+

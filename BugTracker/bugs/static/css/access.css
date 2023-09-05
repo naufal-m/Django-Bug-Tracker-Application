@@ -49,6 +49,15 @@ input[type='text']::placeholder {
     sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
+input[type='email'] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 6px;
+    box-sizing: border-box;
+}
+
 .access-label{
   /* display: block; Make labels appear on separate lines */
   margin-bottom: 8px; /* Add spacing between labels */
@@ -115,3 +124,4 @@ button[type="submit"]:hover {
     height: 0;
   }
 }
+

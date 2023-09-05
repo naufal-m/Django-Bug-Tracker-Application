@@ -84,5 +84,19 @@ th, td {
     padding: 10px;
 }
 
+.history-entry {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
 
+    .history-entry pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
 
+    .bug-image {
+        max-width: 150px;
+        margin-left: 10px;
+    }

@@ -18,7 +18,7 @@
 <!--    font-size: 14px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New</button>-->
         <a href="{% url 'create_project' %}" class="create_bug_link" data-toggle="modal"
            data-target="#createProjectModal"
-           style="color: #2b4a6a; margin-bottom: 10px; margin-left:75px;"><strong>Create New</strong></a>
+           style="color: #2b4a6a; margin-bottom: 10px; margin-left:185px;"><strong>Create New</strong></a>
     </div>
     <table class="table">
         <thead class="project-head-title">
@@ -44,7 +44,8 @@
                 data-delete-url="{% url 'delete_project' project_id=project.id %}">Delete</button>
             </td>
             <td>
-                <button style="padding: 4px 15px 4px 15px; font-size: 12px; background: #2b4a6a;" class="btn btn-primary view-project" data-toggle="modal" data-target="#projectModal"
+                <button style="padding: 4px 15px 4px 15px; font-size: 12px; background: #2b4a6a; border-color: #2b4a6a;"
+                        class="btn btn-primary view-project" data-toggle="modal" data-target="#projectModal"
                 data-project-id="{{ project.id }}"
                 data-project-name="{{ project.name }}"
                 data-project-code="{{ project.code }}"

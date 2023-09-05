@@ -1,8 +1,9 @@
 import form
 from django import forms
-from .models import Bug, Project, Profile
+from .models import Bug, Project, Profile, BugHistory
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 
 
@@ -46,7 +47,13 @@ class BugForm(forms.ModelForm):
         # user = kwargs.pop('user')  # Remove the 'user' keyword argument
         super().__init__(*args, **kwargs)
         # self.fields['assigned_to'].queryset = User.objects.exclude(email=user.email)
-        self.fields['assigned_to'].queryset = project.users.all()
+
+        creator_user = project.created_user
+        associated_user = project.users.all()
+
+        combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
+
+        self.fields['assigned_to'].queryset = combined_users
 
 class ProjectForm(forms.ModelForm):
     users = forms.CharField(
@@ -57,3 +64,7 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ['name', 'description', 'users']
 
+class UpdateBugForm(forms.ModelForm):
+    class Meta:
+        model = BugHistory
+        fields = ['comments', 'images', 'status']
