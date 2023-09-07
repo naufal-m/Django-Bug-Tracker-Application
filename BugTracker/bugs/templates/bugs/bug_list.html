@@ -2,12 +2,13 @@
 
 {% block title %}Bug List{% endblock %}
 
+{% load custom_filters %}
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 
 {% block content %}
 <div  class="bread-crumb" >
-    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | {{ project_name }}-{{ user.username }}</p>
+    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">{{ project_name }}-{{ user.username }}</span></p>
     <p>{{ history_entries }}</p>
 
 </div>
@@ -83,7 +84,7 @@
                 <div class="modal-content">
 
                     <div class="modal-header">
-                        <h5 class="modal-title" id="bugModalLabel{{ bug.id }}" style="color: #b8253b;">Bug Detail</h5>
+                        <h5 class="modal-title" id="bugModalLabel{{ bug.id }}" style="color: #b8253b; font-size:18px;">Bug Detail | <span style="font-size:14px;">{{ bug.bug_id }}</span></h5>
 
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -118,6 +119,16 @@
 
                         <p style="margin-top: 20px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;{{ bug.status }}</p>
 
+                        <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">created&nbsp;&nbsp; {{ bug.created_at }}</p>
+                        {% if last_updated_times|get_item:bug.id %}
+                            <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">updated&nbsp; {{ last_updated_times|get_item:bug.id }}</p>
+                        {% endif %}
+                        {% if bug.status == "Close" %}
+                            <p style="color: #b1aeae; font-size: 14px; font-family: inherit;">resolved&nbsp; {{ last_closed_updated_times|get_item:bug.id }}</p>
+                        {% endif %}
+
+                        <hr>
+
                         <!-- Add status edit form -->
                         <form class="update-status-form" method="post"
                               action="{% url 'update_bug_status' project_id=project_id bug_id=bug.id %}">
@@ -126,12 +137,12 @@
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="commandInput"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span></label>
-                                <input type="text" class="form-control" name="command" id="commandInput">
+                                <textarea placeholder="Add your comment..." class="form-control" name="command2" id="commandInput" rows="3"></textarea>
                             </div>
 
                             <div class="form-group">
-                                <label for="images"><span style="font-weight:bold; color: #2b4a6a;">Images:</span></label>
-                                <input style="padding: 0px; font-size: 13px;" type="file" class="form-control-file" id="images" name="images">
+                                <label for="images"><span style="font-weight:bold; color: #2b4a6a;">Attachment:</span></label>
+                                <input style="padding: 0px; font-size: 13px; cursor: pointer;" type="file" class="form-control-file" id="images" name="images">
                             </div>
 
                             <label for="status"><span style="font-weight:bold; color: #2b4a6a;">Change Status:</span></label>
@@ -153,17 +164,20 @@
 
                     <div class="modal-footer">
                         <div class="history"  style="flex: 100%;">
-                            <p style="border-bottom: 2px solid #ccc;">
-                                <span style="font-weight:bold; color: #2b4a6a;">History:</span>
+                            <p style="border-bottom: 3px solid #ccc; margin-bottom:30px;">
+                                <span style="font-weight:bold; color: #2b4a6a; font-size: 20px;">Comments:</span>
                             </p>
+                            <p><span style="color:#b8253b;">{{ bug.reporter }}</span> created a bug and assigned to {{ bug.assigned_to }} on {{ bug.created_at }}</p>
+                            <hr>
+
                             {% for entry in bug_history_entries %}
                                 {% if entry.bug.project.id == project_id %}
                                     {% if  entry.bug_id_code == bug.bug_id %}
-                                        <p><span style="font-weight:bold;">{{ entry.status_assigned_user }}</span>,
+                                        <p><span style="color: #b8253b;">{{ entry.status_assigned_user }}</span>,
                                             &nbsp;&nbsp;&nbsp;&nbsp;{{ entry.updated_at }}</p>
-                                        <p style="margin-top: -20px;"><span style="font-weight:bold;">Comments:</span>
-                                            &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and status changed to
-                                            <span style="font-weight:bold;">{{ entry.status }}</span></p>
+                                        <p style="margin-top: -20px;"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span>
+                                            &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and the status is changed to
+                                            <span style="color:#b8253b;">{{ entry.status }}</span></p>
                                         {% if entry.images %}
                                             <a href="{{ entry.images.url }}" data-lightbox="image-gallery">
                                                 <img src="{{ entry.images.url }}" alt="Bug Image" style="margin-top:-10px; margin-left: 5px; max-width: 500px; height: 200px;">
@@ -174,7 +188,6 @@
                                 {% endif %}
                             {% endfor %}
 
-<!--                            <pre id="bugHistory" style="border-bottom: 2px solid #ccc;">{{ bug.history }}</pre>-->
                         </div>
                     </div>
 

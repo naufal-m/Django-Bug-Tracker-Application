@@ -8,101 +8,99 @@
 
 {% block content %}
 <div  class="bread-crumb"  style="margin-left: 18px;">
-    <p>{{ user.username }} | <a style="color: #b8253b;" href="{% url 'login' %}">Logout</a> </p>
+    <p><span style="font-size:20px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'login' %}">Logout</a> </p>
 </div>
 <div class="container">
-<h2 style="margin-top: 50px; margin-bottom: 70px; border-bottom: 2px solid #ccc;">Project List</h2>
+    <h2 style="margin-top: 50px; margin-bottom: 70px; border-bottom: 2px solid #ccc;">Project List</h2>
     <h5>Hi, {{ user.username }}</h5>
     <div class="create-project-link">
-<!--        <button style="margin-bottom: 10px; margin-left:970px; background-color: #2b4a6a; padding: 6px 12px 6px 12px;-->
-<!--    font-size: 14px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New</button>-->
         <a href="{% url 'create_project' %}" class="create_bug_link" data-toggle="modal"
            data-target="#createProjectModal"
            style="color: #2b4a6a; margin-bottom: 10px; margin-left:185px;"><strong>Create New</strong></a>
     </div>
     <table class="table">
         <thead class="project-head-title">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Code</th>
-            <th>Created On</th>
-            <th></th>
-            <th></th>
-        </tr>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Created On</th>
+                <th></th>
+                <th></th>
+            </tr>
         </thead>
         <tbody>
-        {% for project in projects %}
-        <tr>
-            <td>{{ project.id }}</td>
-            <td><a style="color: #386fa7;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
-            <td><span style="color: #b8253b;">{{ project.code }}</span></td>
-            <td>{{ project.created_at }}</td>
-            <td>
-                <button class="btn btn-danger delete-project-button" style="padding: 4px 10px 4px 10px; font-size: 12px;"
-                data-project-id="{{ project.id }}"
-                data-delete-url="{% url 'delete_project' project_id=project.id %}">Delete</button>
-            </td>
-            <td>
-                <button style="padding: 4px 15px 4px 15px; font-size: 12px; background: #2b4a6a; border-color: #2b4a6a;"
-                        class="btn btn-primary view-project" data-toggle="modal" data-target="#projectModal"
-                data-project-id="{{ project.id }}"
-                data-project-name="{{ project.name }}"
-                data-project-code="{{ project.code }}"
-                data-created-user="{{ project.created_user }}"
-                data-assigned-user="{{ project.users.all|join:', ' }}"
-                data-description="{{ project.description }}">View
-                </button>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.id }}</td>
+                <td><a style="color: #386fa7;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
+                <td><span style="color: #b8253b;">{{ project.code }}</span></td>
+                <td>{{ project.created_at }}</td>
+                <td>
+                    <button class="btn btn-danger delete-project-button" style="padding: 4px 10px 4px 10px; font-size: 12px;"
+                    data-project-id="{{ project.id }}"
+                    data-delete-url="{% url 'delete_project' project_id=project.id %}">Delete</button>
+                </td>
+                <td>
+                    <button style="padding: 4px 15px 4px 15px; font-size: 12px; background: #2b4a6a; border-color: #2b4a6a;"
+                            class="btn btn-primary view-project" data-toggle="modal" data-target="#projectModal"
+                    data-project-id="{{ project.id }}"
+                    data-project-name="{{ project.name }}"
+                    data-project-code="{{ project.code }}"
+                    data-created-user="{{ project.created_user }}"
+                    data-assigned-user="{{ project.users.all|join:', ' }}"
+                    data-description="{{ project.description }}">View
+                    </button>
 
-            </td>
-        </tr>
-        {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 <!--    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createProjectModal">Create New Project</button>-->
 
 <!--    project detail modal    -->
-<div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="projectModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 style="color: #dc3545;" class="modal-title" id="projectModalLabel">Project Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p><span style="font-weight: bold; color: #2b4a6a;">Project Name:</span> <span id="projectName"></span></p>
-                <p><span style="font-weight: bold; color: #2b4a6a;">Code:</span> <span id="projectCode"></span></p>
-                <p><span style="font-weight: bold; color: #2b4a6a;">Created User:</span> <span id="createdUser"></span></p>
-                <p><span style="font-weight: bold; color: #2b4a6a;">Assigned Users:</span> <span id="assignedUsers"></span></p>
-                <p><span style="font-weight: bold; color: #2b4a6a;">Description:</span> <span id="projectDescription"></span></p>
+    <div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="projectModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 style="color: #dc3545;" class="modal-title" id="projectModalLabel">Project Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><span style="font-weight: bold; color: #2b4a6a;">Project Name:</span> <span id="projectName"></span></p>
+                    <p><span style="font-weight: bold; color: #2b4a6a;">Code:</span> <span id="projectCode"></span></p>
+                    <p><span style="font-weight: bold; color: #2b4a6a;">Created User:</span> <span id="createdUser"></span></p>
+                    <p><span style="font-weight: bold; color: #2b4a6a;">Assigned Users:</span> <span id="assignedUsers"></span></p>
+                    <p><span style="font-weight: bold; color: #2b4a6a;">Description:</span> <span id="projectDescription"></span></p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
     <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Delete Project</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this project?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <a href="#" class="btn btn-danger" id="confirmDelete">Delete</a>
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this project?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <a href="#" class="btn btn-danger" id="confirmDelete">Delete</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 </div>
 
@@ -122,15 +120,15 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="projectName"><strong>Project Name:</strong></label>
-                        <input type="text" class="form-control" id="projectName" name="name" required>
+                        <input placeholder="'Project A'" type="text" class="form-control" id="projectName" name="name" required>
                     </div>
                       <div class="form-group">
                         <label for="description"><strong>Description:</strong></label>
-                        <textarea type="text" class="form-control" id="description" name="description" rows="3"></textarea>
+                        <textarea  placeholder="This project is belongs to....." type="text" class="form-control" id="description" name="description" rows="2"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="users"><strong>Users:</strong></label>
-                        <textarea class="form-control" id="users" name="users" rows="3"></textarea>
+                        <textarea placeholder="john@mail.com" class="form-control" id="users" name="users" rows="1"></textarea>
                         <small id="usersHelp" class="form-text text-muted">
                             Enter email addresses separated by commas.
                         </small>

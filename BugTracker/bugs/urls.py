@@ -13,7 +13,7 @@ urlpatterns = [
     path('delete/<int:project_id>/', views.delete_project, name='delete_project'),
     path('projects/create/', views.create_project, name='create_project'),
 
-    path('bugs/<int:project_id>/', views.bug_list, name='bug_list'),
+    path('create/bugs/<int:project_id>/', views.bug_list, name='bug_list'),
     path('bugs/<int:project_id>/create/', views.create_bug, name='create_bug'),
     path('bugs/report/<int:project_id>/', views.generate_pdf_report, name='generate_pdf_report'),
     # path('bugs/download_bug_report/<int:project_id>/', views.download_bug_report, name='download_bug_report'),

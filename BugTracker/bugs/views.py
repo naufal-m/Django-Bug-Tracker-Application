@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import json
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.template import Template, Context
 from django.utils.html import linebreaks
 
@@ -221,7 +221,22 @@ def bug_list(request, project_id):
 
     combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
     bug_history_entries = BugHistory.objects.all()
-    print("number or entries: ", bug_history_entries.count())
+
+    last_updated_times = {}
+    last_closed_updated_times = {}
+
+    for bug in bugs:
+        last_updated_time = BugHistory.objects.filter(
+            bug=bug,
+        ).aggregate(Max('updated_at'))['updated_at__max']
+
+        last_closed_updated_time = BugHistory.objects.filter(
+            bug=bug,
+            status='Close'
+        ).aggregate(Max('updated_at'))['updated_at__max']
+
+        last_updated_times[bug.id] = last_updated_time
+        last_closed_updated_times[bug.id] = last_closed_updated_time
 
     context = {
         'bugs': bugs,
@@ -233,11 +248,12 @@ def bug_list(request, project_id):
         'reopen_count': reopen_count,
         'close_count': close_count,
         'done_count': done_count,
-        'bug_history_entries': bug_history_entries
+        'bug_history_entries': bug_history_entries,
+        'last_updated_times': last_updated_times,
+        'last_closed_updated_times': last_closed_updated_times,
     }
 
     return render(request, 'bugs/bug_list.html', context)
-
 
 @login_required
 def create_bug(request, project_id):
@@ -274,16 +290,9 @@ def update_bug_status(request, project_id, bug_id):
             bug = Bug.objects.get(id=bug_id)
             project = get_object_or_404(Project, id=bug.project_id)
             new_status = request.POST.get('status')
-            command = request.POST.get('command', '')
+            command = request.POST.get('command2', '')
             uploaded_image = request.FILES.get('images')
             bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
-
-            # Convert the current time to the desired timezone
-            tz = pytz.timezone('Asia/Dubai')  # Replace with your desired timezone
-            current_time = timezone.localtime(timezone.now(), tz)
-            formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
-            formatted_time_dt = datetime.strptime(formatted_time, '%d-%m-%Y, %I:%M %p')
-            formatted_time_dt = tz.localize(formatted_time_dt)
 
             bug.save()
 
@@ -293,7 +302,6 @@ def update_bug_status(request, project_id, bug_id):
                 project=project,
                 comments=command,
                 status=new_status,
-                updated_at=formatted_time_dt,
                 status_assigned_user=bug.update,
                 report_user=request.user,
                 bug_id_code=bug.bug_id,
@@ -314,109 +322,12 @@ def update_bug_status(request, project_id, bug_id):
                 'form': form,
                 'project_id': project_id,
             }
-            return render(request, 'bugs/bug_list.html', context)
 
-            # return redirect('bug_list', project_id=project_id)
+            return render(request, 'bugs/bug_list.html', context)
 
     else:
         form = UpdateBugForm()
     return render(request, 'bugs/bug_list.html', {'form': form})
-
-
-
-# @login_required
-# def update_bug_status(request, bug_id):
-#     if request.method == 'POST':
-#         bug = Bug.objects.get(id=bug_id)
-#         new_status = request.POST.get('status')
-#         command = request.POST.get('command', '')
-#         bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
-#         current_history = bug.history or ''  # Get the current history or initialize as an empty string
-#
-#         # Convert the current time to the desired timezone
-#         tz = pytz.timezone('Asia/Dubai')  # Replace with your desired timezone
-#         current_time = timezone.localtime(timezone.now(), tz)
-#
-#         # timestamp = timezone.now()
-#         # current_time = timezone.localtime(timezone.now())
-#         formatted_time = current_time.strftime('%d-%m-%Y, %I:%M %p')
-#
-#         # Add the new command to the history
-#         new_history = (f"{current_history}\n{bug.update}  {formatted_time}:\nStatus updated to {new_status}, "
-#                        f"Comment: {command}")
-#
-#         bug.command = command
-#         bug.history = new_history
-#
-#         # Update the bug status
-#         bug.status = new_status
-#         bug.save()
-#
-#         success_message = f'Bug status updated to {new_status}'
-#         history_entry = (f'{bug.update}  {formatted_time}: \nStatus updated to {new_status}, Comment: {bug.command}')
-#         return JsonResponse({'status': 'success', 'message': success_message,
-#                              'history_entry': history_entry})
-
-
-# def download_bug_report(request, project_id):
-#     # project = Project.objects.get(id=project_id)  # Get the project
-#
-#     # Retrieve the project and bugs for the report
-#     project = get_object_or_404(Project, pk=project_id)
-#     bugs = Bug.objects.filter(project=project)
-#
-#     # Create a response object with appropriate content type for CSV
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.xlsx"'
-#
-#     # Create an Excel workbook and add a worksheet
-#     workbook = xlsxwriter.Workbook(response, {'in_memory': True})
-#     worksheet = workbook.add_worksheet()
-#
-#     # Define bold format
-#     bold_format = workbook.add_format({'bold': True})
-#
-#     # Write the project name in bold as the first row
-#     worksheet.write('A1', f'Project:  {project.name}', bold_format)
-#
-#     # Add two empty rows for separation
-#     worksheet.write('A2', '')  # Empty row 1
-#     worksheet.write('A3', '')  # Empty row 2
-#
-#     # Write the table headings with bold formatting
-#     headings = ['Bug ID', 'Title', 'Description', 'Created At', 'Status']
-#     for col_num, heading in enumerate(headings):
-#         worksheet.write(4, col_num, heading, bold_format)
-#
-#     # Write the bug data rows
-#     for row_num, bug in enumerate(bugs, start=5):
-#             worksheet.write(row_num, 0, bug.bug_id)
-#             worksheet.write(row_num, 1, bug.title)
-#             worksheet.write(row_num, 2, bug.description)
-#             worksheet.write(row_num, 3, bug.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # Convert to string)
-#             worksheet.write(row_num, 4, bug.status)
-#
-#     workbook.close()
-#
-#     return response
-
-# def generate_pdf_report(request, project_id):
-#     project = get_object_or_404(Project, pk=project_id)
-#     bugs = Bug.objects.filter(project=project)
-#
-#     template = get_template('bugs/pdf_report_template.html')
-#     context = {'project': project, 'bugs': bugs}
-#     html = template.render(context)
-#
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.pdf"'
-#
-#     pisa_status = pisa.CreatePDF(html, dest=response)
-#
-#     if pisa_status.err:
-#         return HttpResponse('An error occurred while generating the PDF')
-#
-#     return response
 
 @login_required
 def generate_pdf_report(request, project_id):
@@ -512,5 +423,3 @@ def generate_pdf_report(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.pdf"'
 
     return response
-
-
