@@ -8,8 +8,8 @@
 
 {% block content %}
 <div  class="bread-crumb" >
-    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">{{ project_name }}-{{ user.username }}</span></p>
-    <p>{{ history_entries }}</p>
+    <p><a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">
+        {{ project_name }}-{{ user.username }}</span></p>
 
 </div>
 <h2 style="border-bottom: 2px solid #ccc;">Bug List</h2>
@@ -84,7 +84,8 @@
                 <div class="modal-content">
 
                     <div class="modal-header">
-                        <h5 class="modal-title" id="bugModalLabel{{ bug.id }}" style="color: #b8253b; font-size:18px;">Bug Detail | <span style="font-size:14px;">{{ bug.bug_id }}</span></h5>
+                        <h5 class="modal-title" id="bugModalLabel{{ bug.id }}" style="color: #b8253b; font-size:18px;">
+                            Bug Detail | <span style="font-size:14px; color: #2b4a6a;">{{ bug.bug_id }}</span></h5>
 
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -92,11 +93,11 @@
                     </div>
 
                     <div class="modal-body">
-                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">ID: </span>&nbsp;&nbsp;{{ bug.bug_id }}</p>
-                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Reported by: </span>&nbsp;&nbsp;{{ bug.reporter }}</p>
-                        <p><span style="font-weight:bold; color: #2b4a6a;">Assigned_to: </span>&nbsp;&nbsp;{{ bug.assigned_to }}</p>
-                        <p><span style="font-weight:bold; color: #2b4a6a;">Title:</span><br>{{ bug.title }}</p>
-                        <p><span style="font-weight:bold; color: #2b4a6a;">Description:</span><br>{{ bug.description }}</p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">ID: </span>&nbsp;&nbsp;<span style="font-weight: 400;"> {{ bug.bug_id }}</span></p>
+                        <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Reported by: </span>&nbsp;&nbsp;<span style="font-weight: 400;">{{ bug.reporter }}</span></p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Assigned_to: </span>&nbsp;&nbsp;<span style="font-weight: 400;">{{ bug.assigned_to }}</span></p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Title:</span><br><span style="font-weight: 400;">{{ bug.title }}</span></p>
+                        <p><span style="font-weight:bold; color: #2b4a6a;">Description:</span><br><span style="font-weight: 400;">{{ bug.description }}</span></p>
 
                         <!-- Display the uploaded image -->
                         {% if bug.images %}
@@ -117,15 +118,18 @@
                             </div>
                         </div>
 
-                        <p style="margin-top: 20px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;{{ bug.status }}</p>
+                        <p style="margin-top: 20px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;<span style="font-weight: 400;">{{ bug.status }}</span></p>
+                        <hr>
 
-                        <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">created&nbsp;&nbsp; {{ bug.created_at }}</p>
-                        {% if last_updated_times|get_item:bug.id %}
-                            <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">updated&nbsp; {{ last_updated_times|get_item:bug.id }}</p>
-                        {% endif %}
-                        {% if bug.status == "Close" %}
-                            <p style="color: #b1aeae; font-size: 14px; font-family: inherit;">resolved&nbsp; {{ last_closed_updated_times|get_item:bug.id }}</p>
-                        {% endif %}
+                        <div class="update-time-logs">
+                            <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">created&nbsp;&nbsp; {{ bug.created_at }}</p>
+                            {% if last_updated_times|get_item:bug.id %}
+                                <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">updated&nbsp; {{ last_updated_times|get_item:bug.id }}</p>
+                            {% endif %}
+                            {% if bug.status == "Close" %}
+                                <p style="color: #b1aeae; font-size: 14px; font-family: inherit;">resolved&nbsp; {{ last_closed_updated_times|get_item:bug.id }}</p>
+                            {% endif %}
+                        </div>
 
                         <hr>
 
@@ -137,12 +141,14 @@
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="commandInput"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span></label>
-                                <textarea placeholder="Add your comment..." class="form-control" name="command2" id="commandInput" rows="3"></textarea>
+                                <textarea placeholder="Add your comment..." class="form-control" name="command2"
+                                          id="commandInput" rows="3"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label for="images"><span style="font-weight:bold; color: #2b4a6a;">Attachment:</span></label>
-                                <input style="padding: 0px; font-size: 13px; cursor: pointer;" type="file" class="form-control-file" id="images" name="images">
+                                <input style="padding: 0px; font-size: 13px; cursor: pointer;"
+                                       type="file" class="form-control-file" id="images" name="images">
                             </div>
 
                             <label for="status"><span style="font-weight:bold; color: #2b4a6a;">Change Status:</span></label>
@@ -164,29 +170,32 @@
 
                     <div class="modal-footer">
                         <div class="history"  style="flex: 100%;">
-                            <p style="border-bottom: 3px solid #ccc; margin-bottom:30px;">
-                                <span style="font-weight:bold; color: #2b4a6a; font-size: 20px;">Comments:</span>
+                            <p style="border-bottom: 3px solid #ccc; margin-bottom:12px;">
+                                <span style="font-weight:bold; color: #2b4a6a; font-size: 16px;">Comments:</span>
                             </p>
-                            <p><span style="color:#b8253b;">{{ bug.reporter }}</span> created a bug and assigned to {{ bug.assigned_to }} on {{ bug.created_at }}</p>
+                            <p style="font-size: 14px;"><span style="color:#b8253b;">{{ bug.reporter }}</span>
+                                created this bug and assigned to {{ bug.assigned_to }} on {{ bug.created_at }}</p>
                             <hr>
 
-                            {% for entry in bug_history_entries %}
-                                {% if entry.bug.project.id == project_id %}
-                                    {% if  entry.bug_id_code == bug.bug_id %}
-                                        <p><span style="color: #b8253b;">{{ entry.status_assigned_user }}</span>,
-                                            &nbsp;&nbsp;&nbsp;&nbsp;{{ entry.updated_at }}</p>
-                                        <p style="margin-top: -20px;"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span>
-                                            &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and the status is changed to
-                                            <span style="color:#b8253b;">{{ entry.status }}</span></p>
-                                        {% if entry.images %}
-                                            <a href="{{ entry.images.url }}" data-lightbox="image-gallery">
-                                                <img src="{{ entry.images.url }}" alt="Bug Image" style="margin-top:-10px; margin-left: 5px; max-width: 500px; height: 200px;">
-                                            </a>
+                            <div class="history-comments">
+                                {% for entry in bug_history_entries %}
+                                    {% if entry.bug.project.id == project_id %}
+                                        {% if  entry.bug_id_code == bug.bug_id %}
+                                            <p><span style="color: #b8253b;">{{ entry.status_assigned_user }}</span>,
+                                                &nbsp;&nbsp;&nbsp;&nbsp;{{ entry.updated_at }}</p>
+                                            <p style="margin-top: -20px;"><span style="font-weight:bold; color: #2b4a6a;">Comments:</span>
+                                                &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and the status is changed to
+                                                <span style="color:#b8253b;">{{ entry.status }}</span></p>
+                                            {% if entry.images %}
+                                                <a href="{{ entry.images.url }}" data-lightbox="image-gallery">
+                                                    <img src="{{ entry.images.url }}" alt="Bug Image" style="margin-top:-10px; margin-left: 5px; max-width: 500px; height: 200px;">
+                                                </a>
+                                            {% endif %}
+                                            <hr>
                                         {% endif %}
-                                        <hr>
                                     {% endif %}
-                                {% endif %}
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
 
                         </div>
                     </div>

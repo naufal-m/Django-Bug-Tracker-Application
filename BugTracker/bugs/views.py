@@ -1,42 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-import json
-from django.urls import reverse
-from django.db.models import Q, Max
-from django.template import Template, Context
-from django.utils.html import linebreaks
+import time
 
-from .models import Bug, Project, Profile, Image, BugHistory
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q, Max
+
+from .models import Bug, Profile, BugHistory, Image, Project
 from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm, UpdateBugForm
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
+from django.http import JsonResponse, HttpResponse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import datetime
-from django.utils import timezone
-import pytz, csv, xlsxwriter
-from django.template.loader import get_template
-from xhtml2pdf import pisa
 from io import BytesIO
 
-from reportlab.lib.pagesizes import letter, landscape, portrait, A4
+from reportlab.lib.pagesizes import letter, portrait, A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, LongTable, PageBreak, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from django.db.models import F
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 import textwrap
 
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, password_validation
-from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import TemplateView
 
 from .emails import (send_forget_password_mail, send_bug_assigned_email, send_registration_invitation_email,
-                     send_project_invitation_email)
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.conf import settings
+                     send_project_invitation_email, send_password_change_ack)
 import uuid
 
 
@@ -47,7 +35,7 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
 
-            #   new line added
+            #   get the value from the form fields
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             form.save()
@@ -64,7 +52,11 @@ def signup(request):
                     messages.error(request, f"Error in {form.fields[field_name].label}: {error}")
     else:
         form = SignUpForm()
-    return render(request, 'bugs/signup.html', {'form': form})
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'bugs/signup.html', context)
 
 
 class CustomLoginView(LoginView, TemplateView):
@@ -87,7 +79,7 @@ class CustomLoginView(LoginView, TemplateView):
         return response
 
 
-def change_password(request):
+def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPassword(request.POST)
         if form.is_valid():
@@ -96,17 +88,14 @@ def change_password(request):
 
                 user = User.objects.get(email=email)
                 user_id = user.id
-                print(user_id)
 
                 token = str(uuid.uuid4())
+                print("token is: ", token)
 
                 #   check if a profile already exist for the user
                 try:
                     profile = Profile.objects.get(user_id=user_id)
                 except Profile.DoesNotExist:
-                    print("Hello")
-                    # Save the token and related information to the Profile model
-                    # profile = Profile(user=user)
                     profile = Profile.objects.create(user=user, forget_password_token=token, created_at=datetime.now())
                     profile.save()
 
@@ -120,22 +109,56 @@ def change_password(request):
 
             except User.DoesNotExist:
                 print("User not found")
-
     else:
         form = ForgotPassword()
-    return render(request, 'bugs/change-password.html', {'form': form})
-
-
-def ResetPassword(request, token):
-    valid_token = True
-    profile_obj = Profile.objects.get(forget_password_token=token)
-    print(profile_obj)
 
     context = {
-        'valid_token': valid_token,
-        'form': PasswordResetForm
+        'form': form,
     }
-    return render(request, 'bugs/reset-password.html', context)
+    return render(request, 'bugs/forgot-password.html', context)
+
+def reset_form(request, token):
+    profile = Profile.objects.get(forget_password_token=token)
+    user = profile.user
+
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            try:
+                profile = Profile.objects.get(forget_password_token=token)
+                user = profile.user
+            except Profile.DoesNotExist:
+                return HttpResponse("Invalid token")
+
+            password = form.cleaned_data.get('new_password1')
+            user.set_password(password)
+            user.save()
+
+            send_password_change_ack(user)
+            print(send_password_change_ack(user))
+
+            update_session_auth_hash(request, user)
+
+            profile.forget_password_token = ''
+            profile.save()
+
+            messages.success(request, 'Password reset successful. Check your email.')
+            time.sleep(5)
+
+            return redirect('login')
+        else:
+            print("Form is not valid")
+
+    else:
+        form = PasswordResetForm()
+
+    template_name = "bugs/reset-password.html"
+    context = {
+        'form': form,
+        'token': token,
+        'user': user,
+    }
+    return render(request, template_name, context)
 
 
 @login_required
@@ -148,7 +171,10 @@ def project_list(request):
     # for project in user_projects:
     #     project.code = project.name[:3].upper()
 
-    return render(request, 'bugs/project_list.html', {'projects': projects})
+    context = {
+        'projects': projects,
+    }
+    return render(request, 'bugs/project_list.html', context)
 
 
 @login_required
@@ -193,7 +219,11 @@ def create_project(request):
             return redirect('project_list')
     else:
         form = ProjectForm()
-    return render(request, 'bugs/create_project.html', {'form': form})
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'bugs/create_project.html', context)
 
 
 @login_required
@@ -222,6 +252,7 @@ def bug_list(request, project_id):
     combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
     bug_history_entries = BugHistory.objects.all()
 
+    # last time for status/bug update as well as status close
     last_updated_times = {}
     last_closed_updated_times = {}
 
@@ -270,7 +301,7 @@ def create_bug(request, project_id):
             bug.save()
 
             # Use the send_bug_assigned_email function to send the email
-            send_bug_assigned_email(bug)
+            # send_bug_assigned_email(bug)
 
             return redirect('bug_list', project_id=project_id)
     else:
@@ -278,8 +309,13 @@ def create_bug(request, project_id):
         form = BugForm(project=project)
 
         project = Project.objects.get(id=project_id)
-    return render(request, 'bugs/create_bug.html', {'form': form, 'project_name': project.name,
-                                                    'project_id': project_id})
+
+    context = {
+        'form': form,
+        'project_name': project.name,
+        'project_id': project_id,
+    }
+    return render(request, 'bugs/create_bug.html', context)
 
 
 @login_required
@@ -327,7 +363,11 @@ def update_bug_status(request, project_id, bug_id):
 
     else:
         form = UpdateBugForm()
-    return render(request, 'bugs/bug_list.html', {'form': form})
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'bugs/bug_list.html', context)
 
 @login_required
 def generate_pdf_report(request, project_id):

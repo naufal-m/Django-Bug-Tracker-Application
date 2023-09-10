@@ -1,13 +1,12 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('auth/signup/', views.signup, name='signup'),
     path('auth/login/', views.CustomLoginView.as_view(), name='login'),
 
-    path('bugs/auth/change-password/', views.change_password, name='changepassword'),
-    path('bugs/reset-password/<token>', views.ResetPassword, name='resetpassword'),
+    path('bugs/auth/forgot_password/', views.forgot_password, name='forgotpassword'),
+    path('bugs/reset-password-form/<str:token>/', views.reset_form, name='reset_form'),
 
     path('projects/', views.project_list, name='project_list'),
     path('delete/<int:project_id>/', views.delete_project, name='delete_project'),
@@ -15,7 +14,7 @@ urlpatterns = [
 
     path('create/bugs/<int:project_id>/', views.bug_list, name='bug_list'),
     path('bugs/<int:project_id>/create/', views.create_bug, name='create_bug'),
-    path('bugs/report/<int:project_id>/', views.generate_pdf_report, name='generate_pdf_report'),
-    # path('bugs/download_bug_report/<int:project_id>/', views.download_bug_report, name='download_bug_report'),
     path('bugs/<int:project_id>/update-status/<int:bug_id>/', views.update_bug_status, name='update_bug_status'),
+
+    path('bugs/report/<int:project_id>/', views.generate_pdf_report, name='generate_pdf_report'),
 ]

@@ -1,5 +1,5 @@
 .access-page {
-    max-width: 460px;
+    max-width: 550px;
     margin: 70px auto;
     padding: 20px;
     background-color: white;
@@ -58,7 +58,7 @@ input[type='email'] {
     box-sizing: border-box;
 }
 
-.access-label{
+.access-label {
   /* display: block; Make labels appear on separate lines */
   margin-bottom: 8px; /* Add spacing between labels */
   font-weight: bold; /* Make labels bold for better visibility */
@@ -93,7 +93,7 @@ button[type="submit"] {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-bottom: 5px;
+    margin-bottom: 135px;
     margin-top: 30px;
 }
 
@@ -123,5 +123,10 @@ button[type="submit"]:hover {
     width: 0;
     height: 0;
   }
+}
+
+.reset-button, .sign-up-button, .login-button {
+    margin-bottom: -140px;
+    margin-top: -10px;
 }
 

@@ -6,10 +6,34 @@ from django.urls import reverse
 
 def send_forget_password_mail(email, token):
     subject = 'Your forget password link'
-    message = f'Hi, Click on the link to reset your password http://127.0.0.1:8000/bugs/reset-password/{token}'
+    reset_form_url = reverse('reset_form', args=[token])
+    reset_link = f"{settings.BASE_URL}{reset_form_url}"
+    message = f'Hi, Click on the link to reset your password {reset_link}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
-    send_mail(subject, message, email_from, recipient_list)
+    print("forgot email goes to: ", recipient_list)
+    send_mail(
+        subject,
+        message,
+        email_from,
+        recipient_list
+    )
+    return True
+
+def send_password_change_ack(user):
+    subject = 'Your password has been reset'
+    login_url = reverse('login')  # Replace 'login' with your actual login URL name
+    login_link = f'{settings.BASE_URL}{login_url}'
+    message = f'Hi, You have changed your password successfully. Please go to the link for login to the application {login_link}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [user.email]
+    print("inbox comes in: ", recipient_list)
+    send_mail(
+        subject,
+        message,
+        email_from,
+        recipient_list
+    )
     return True
 
 def send_bug_assigned_email(bug):
@@ -26,7 +50,13 @@ def send_bug_assigned_email(bug):
 
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [bug.assigned.email]
-    send_mail(subject, "", from_email, recipient_list, html_message=message)
+    send_mail(
+        subject,
+        "",
+        from_email,
+        recipient_list,
+        html_message=message
+    )
 
 def send_project_invitation_email(project, user):
     login_url = reverse('login')  # Replace 'login' with your actual login URL name
@@ -42,7 +72,14 @@ def send_project_invitation_email(project, user):
 
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [user.email]
-    send_mail(subject, "", from_email, recipient_list, html_message=message, fail_silently=False)
+    send_mail(
+        subject,
+        "",
+        from_email,
+        recipient_list,
+        html_message=message,
+        fail_silently=False
+    )
 
 def send_registration_invitation_email(project, email):
     signup_url = reverse('signup')
@@ -57,4 +94,11 @@ def send_registration_invitation_email(project, email):
 
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [email]
-    send_mail(subject, message, from_email, recipient_list, html_message=message, fail_silently=False)
+    send_mail(
+        subject,
+        message,
+        from_email,
+        recipient_list,
+        html_message=message,
+        fail_silently=False
+    )
