@@ -4,9 +4,10 @@ from . import views
 urlpatterns = [
     path('auth/signup/', views.signup, name='signup'),
     path('auth/login/', views.CustomLoginView.as_view(), name='login'),
+    path('auth/home/', views.home_page, name='home'),
 
-    path('bugs/auth/forgot_password/', views.forgot_password, name='forgotpassword'),
-    path('bugs/reset-password-form/<str:token>/', views.reset_form, name='reset_form'),
+    path('bugs/auth/forgot_password/', views.forgot_password, name='forgot_password'),
+    path('bugs/reset-password-form/<str:token>/', views.reset_password, name='reset_password'),
 
     path('projects/', views.project_list, name='project_list'),
     path('delete/<int:project_id>/', views.delete_project, name='delete_project'),

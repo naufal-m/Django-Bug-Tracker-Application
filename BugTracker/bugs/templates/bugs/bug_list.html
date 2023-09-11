@@ -21,7 +21,8 @@
         In Progress:<span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Re-open:<span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Done:<span style="color: green;">  {{ done_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Close:<span style="color: grey;">  {{ close_count }}</span></p>
+        Close:<span style="color: grey;">  {{ close_count }}</span>
+    </p>
 </div>
 
 <div class="filter"  style="margin-top: 50px; margin-bottom: 10px; display: flex; align-items: center; ">
@@ -121,6 +122,7 @@
                         <p style="margin-top: 20px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;<span style="font-weight: 400;">{{ bug.status }}</span></p>
                         <hr>
 
+<!--                        Show the times of bug create/last updated/status closed dates and times-->
                         <div class="update-time-logs">
                             <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">created&nbsp;&nbsp; {{ bug.created_at }}</p>
                             {% if last_updated_times|get_item:bug.id %}
@@ -133,10 +135,9 @@
 
                         <hr>
 
-                        <!-- Add status edit form -->
+                        <!-- Add status edit form or Bug update form  -->
                         <form class="update-status-form" method="post"
                               action="{% url 'update_bug_status' project_id=project_id bug_id=bug.id %}">
-
 
                             {% csrf_token %}
                             <div class="form-group">
@@ -168,6 +169,7 @@
                         <div class="success-message"></div>
                     </div>
 
+                    <!--                            Section defined the History/Comments view of bug updates-->
                     <div class="modal-footer">
                         <div class="history"  style="flex: 100%;">
                             <p style="border-bottom: 3px solid #ccc; margin-bottom:12px;">

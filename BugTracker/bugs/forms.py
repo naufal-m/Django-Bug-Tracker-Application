@@ -32,6 +32,7 @@ class SignUpForm(UserCreationForm):
             'placeholder': 'Re-enter your password',
         }),
     )
+
     class Meta:
         model = User
         fields = [
@@ -45,6 +46,7 @@ class SignUpForm(UserCreationForm):
                 'placeholder': 'john@mail.com',
             }),
         }
+
 
 class ForgotPassword(forms.Form):
     email = forms.EmailField(
@@ -77,6 +79,7 @@ class PasswordResetForm(forms.Form):
         }),
     )
 
+
 class BugForm(forms.ModelForm):
     class Meta:
         model = Bug
@@ -102,6 +105,7 @@ class BugForm(forms.ModelForm):
 
         self.fields['assigned_to'].queryset = combined_users
 
+
 class ProjectForm(forms.ModelForm):
     users = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -116,6 +120,7 @@ class ProjectForm(forms.ModelForm):
             'description',
             'users',
         ]
+
 
 class UpdateBugForm(forms.ModelForm):
     class Meta:

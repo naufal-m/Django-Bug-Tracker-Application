@@ -1,14 +1,15 @@
 import time
+from datetime import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q, Max
+from django.urls import reverse
+from django.db.models import Q, Max, Count
+from io import BytesIO
 
 from .models import Bug, Profile, BugHistory, Image, Project
 from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm, UpdateBugForm
 from django.http import JsonResponse, HttpResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from datetime import datetime
-from io import BytesIO
 
 from reportlab.lib.pagesizes import letter, portrait, A4
 from reportlab.lib import colors
@@ -23,12 +24,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import TemplateView
 
-from .emails import (send_forget_password_mail, send_bug_assigned_email, send_registration_invitation_email,
-                     send_project_invitation_email, send_password_change_ack)
 import uuid
-
+from .emails import (send_forget_password_mail, send_password_change_ack, send_bug_assigned_email,
+                     send_registration_invitation_email, send_project_invitation_email, )
 
 # Create your views here.
+
 
 def signup(request):
     if request.method == 'POST':
@@ -53,10 +54,11 @@ def signup(request):
     else:
         form = SignUpForm()
 
+    template_name = 'bugs/signup.html'
     context = {
         'form': form,
     }
-    return render(request, 'bugs/signup.html', context)
+    return render(request, template_name, context)
 
 
 class CustomLoginView(LoginView, TemplateView):
@@ -64,10 +66,11 @@ class CustomLoginView(LoginView, TemplateView):
 
     def form_valid(self, form):
         login(self.request, form.get_user())
-        return redirect('project_list')  # Redirect to the 'project_list' page
+        return redirect('home')  # Redirect to the 'project_list' page
 
     def form_invalid(self, form):
-        messages.error(self.request, "Login failed, Username or password is incorrect.")
+        message = "Login failed, Username or password is incorrect."
+        messages.error(self.request, message)
         return super().form_invalid(form)
 
     def get(self, request, *args, **kwargs):
@@ -84,8 +87,8 @@ def forgot_password(request):
         form = ForgotPassword(request.POST)
         if form.is_valid():
             email = form.cleaned_data.get('email')
-            try:
 
+            try:
                 user = User.objects.get(email=email)
                 user_id = user.id
 
@@ -105,25 +108,29 @@ def forgot_password(request):
 
                 send_forget_password_mail(email, token)
 
-                messages.success(request, 'An email has been sent.')
+                message = 'An email has been sent.'
+                messages.success(request, message)
 
             except User.DoesNotExist:
                 print("User not found")
     else:
         form = ForgotPassword()
 
+    template_name = 'bugs/forgot-password.html'
     context = {
         'form': form,
     }
-    return render(request, 'bugs/forgot-password.html', context)
+    return render(request, template_name, context)
 
-def reset_form(request, token):
+
+def reset_password(request, token):
     profile = Profile.objects.get(forget_password_token=token)
     user = profile.user
 
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
+
             try:
                 profile = Profile.objects.get(forget_password_token=token)
                 user = profile.user
@@ -142,7 +149,8 @@ def reset_form(request, token):
             profile.forget_password_token = ''
             profile.save()
 
-            messages.success(request, 'Password reset successful. Check your email.')
+            message = 'Password reset successful. Check your email.'
+            messages.success(request, message)
             time.sleep(5)
 
             return redirect('login')
@@ -171,10 +179,11 @@ def project_list(request):
     # for project in user_projects:
     #     project.code = project.name[:3].upper()
 
+    template_name = 'bugs/project_list.html'
     context = {
         'projects': projects,
     }
-    return render(request, 'bugs/project_list.html', context)
+    return render(request, template_name, context)
 
 
 @login_required
@@ -182,8 +191,12 @@ def delete_project(request, project_id):
     if request.method == 'POST':
         project = Project.objects.get(id=project_id)
         project.delete()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+        return JsonResponse({
+            'success': True
+        })
+    return JsonResponse({
+        'success': False
+    })
 
 
 @login_required
@@ -220,10 +233,11 @@ def create_project(request):
     else:
         form = ProjectForm()
 
+    template_name = 'bugs/create_project.html'
     context = {
         'form': form,
     }
-    return render(request, 'bugs/create_project.html', context)
+    return render(request, template_name, context)
 
 
 @login_required
@@ -269,6 +283,7 @@ def bug_list(request, project_id):
         last_updated_times[bug.id] = last_updated_time
         last_closed_updated_times[bug.id] = last_closed_updated_time
 
+    template_name = 'bugs/bug_list.html'
     context = {
         'bugs': bugs,
         'project_name': project.name,
@@ -284,7 +299,7 @@ def bug_list(request, project_id):
         'last_closed_updated_times': last_closed_updated_times,
     }
 
-    return render(request, 'bugs/bug_list.html', context)
+    return render(request, template_name, context)
 
 @login_required
 def create_bug(request, project_id):
@@ -301,7 +316,7 @@ def create_bug(request, project_id):
             bug.save()
 
             # Use the send_bug_assigned_email function to send the email
-            # send_bug_assigned_email(bug)
+            send_bug_assigned_email(bug)
 
             return redirect('bug_list', project_id=project_id)
     else:
@@ -310,12 +325,13 @@ def create_bug(request, project_id):
 
         project = Project.objects.get(id=project_id)
 
+    template_name = 'bugs/create_bug.html'
     context = {
         'form': form,
         'project_name': project.name,
         'project_id': project_id,
     }
-    return render(request, 'bugs/create_bug.html', context)
+    return render(request, template_name, context)
 
 
 @login_required
@@ -332,7 +348,7 @@ def update_bug_status(request, project_id, bug_id):
 
             bug.save()
 
-            # Create a new BugHistory entry
+            # Create a new BugHistory entry (saving data to BugHistory Model)
             history_entry = BugHistory(
                 bug=bug,
                 project=project,
@@ -354,20 +370,23 @@ def update_bug_status(request, project_id, bug_id):
             bug.comment = command
             bug.save()
 
+            template_name = 'bugs/bug_list.html'
             context = {
                 'form': form,
                 'project_id': project_id,
             }
 
-            return render(request, 'bugs/bug_list.html', context)
+            return render(request, template_name, context)
 
     else:
         form = UpdateBugForm()
 
+    template_name = 'bugs/bug_list.html'
     context = {
         'form': form,
     }
-    return render(request, 'bugs/bug_list.html', context)
+    return render(request, template_name, context)
+
 
 @login_required
 def generate_pdf_report(request, project_id):
@@ -463,3 +482,40 @@ def generate_pdf_report(request, project_id):
     response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.pdf"'
 
     return response
+
+
+@login_required
+def home_page(request):
+    user = request.user
+
+    projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
+
+    project_data = []
+
+    for project in projects:
+        open_count = Bug.objects.filter(project=project, status='Open').count()
+        in_progress_count = Bug.objects.filter(project=project, status='In Progress').count()
+        reopen_count = Bug.objects.filter(project=project, status='Re-open').count()
+        close_count = Bug.objects.filter(project=project, status='Close').count()
+        done_count = Bug.objects.filter(project=project, status='Done').count()
+
+        status_total_count = open_count + in_progress_count + reopen_count + done_count + close_count
+
+        project_info = {
+            'project': project,
+            'status_total_count': status_total_count,
+            'open_count': open_count,
+            'in_progress_count': in_progress_count,
+            'reopen_count': reopen_count,
+            'close_count': close_count,
+            'done_count': done_count,
+            'bug_list_url': reverse('bug_list', args=[project.id]),
+        }
+        project_data.append(project_info)
+
+    template_name = 'bugs/home.html'
+    context = {
+        'user': user,
+        'project_data': project_data,
+    }
+    return render(request, template_name, context)

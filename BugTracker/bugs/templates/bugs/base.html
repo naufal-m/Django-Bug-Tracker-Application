@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %} {% endblock %}</title>
+
     {% load static %}
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -17,35 +18,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
 
     <!-- Include your custom JavaScript file -->
-<script src="{% static 'js/statusupdate.js' %}"></script>
-<script src="{% static 'js/statusfilter.js' %}"></script>
-<script src="{% static 'js/imagepopup.js' %}"></script>
-<script src="{% static 'js/deleteproject.js' %}"></script>
-<script src="{% static 'js/history.js' %}"></script>
-<script src="{% static 'js/projectdetail.js' %}"></script>
-<script src="{% static 'js/assignedusersfilter.js' %}"></script>
+    <script src="{% static 'js/statusupdate.js' %}"></script>
+    <script src="{% static 'js/statusfilter.js' %}"></script>
+    <script src="{% static 'js/imagepopup.js' %}"></script>
+    <script src="{% static 'js/deleteproject.js' %}"></script>
+    <script src="{% static 'js/history.js' %}"></script>
+    <script src="{% static 'js/projectdetail.js' %}"></script>
+    <script src="{% static 'js/assignedusersfilter.js' %}"></script>
 </head>
 <body>
-<div class="container">
-{% block content %}
-    <ul class="navbar-nav ml-auto">
-    {% if user.is_authenticated %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'project_list' %}">Project List</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-        </li>
-    {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Log In</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
-        </li>
-    {% endif %}
-</ul>
-{% endblock %}
-</div>
+    <div class="container">
+        {% block content %}
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'project_list' %}">Project List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
+                    </li>
+                {% endif %}
+            </ul>
+        {% endblock %}
+    </div>
 </body>
 </html>

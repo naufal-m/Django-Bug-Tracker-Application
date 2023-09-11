@@ -58,6 +58,7 @@ button[type="submit"] {
     border-radius: 4px;
     cursor: pointer;
 }
+
 button[type="submit"]:hover {
     background-color: #648bb3;
 }
