@@ -20,6 +20,9 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 import textwrap
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics import renderPDF
+from reportlab.graphics.shapes import Drawing
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, update_session_auth_hash
@@ -392,6 +395,7 @@ def update_bug_status(request, project_id, bug_id):
 def generate_pdf_report(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     bugs = Bug.objects.filter(project=project)
+    bugs.reporter = request.user.username
 
     # Calculate bug counts by status
     open_count = bugs.filter(status='Open').count()
@@ -400,13 +404,36 @@ def generate_pdf_report(request, project_id):
     close_count = bugs.filter(status='Close').count()
     done_count = bugs.filter(status='Done').count()
 
+    # Create a list to hold the data for the chart
+    status_data = [
+        ('Open', open_count),
+        ('In Progress', in_progress_count),
+        ('Re-open', reopen_count),
+        ('Done', done_count),
+        ('Close', close_count),
+    ]
+
+    drawing = Drawing(400, 200)
+
+    chart = VerticalBarChart()
+    chart.data = [status[1] for status in status_data]  # Extract counts from the status_data list
+    chart.categoryAxis.categoryNames = [status[0] for status in status_data]    # Extract status names
+    chart.width = 400
+    chart.height = 200
+
+    drawing.add(chart)
+    chart.x = 50
+    chart.y = 20
+    chart.barWidth = 20
+
     # Create a buffer to store the PDF content
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=portrait(A4))
+    # doc = SimpleDocTemplate(buffer, pagesize=portrait(A4))
 
     # Create a list to hold the data for the paragraphs
     paragraphs = [
         Paragraph(f'Project Name: {project.name}', getSampleStyleSheet()['Heading1']),
+        Paragraph(f'Bug Reports by: {bugs.reporter}', getSampleStyleSheet()['Heading3']),
         Paragraph(f'Status Count:', getSampleStyleSheet()['Heading3']),
         Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
@@ -419,6 +446,7 @@ def generate_pdf_report(request, project_id):
     # Create a ReportLab PDF document
     doc = SimpleDocTemplate(buffer, pagesize=portrait(letter))
     story = []
+    story.extend([Paragraph("Bug Status Chart"), drawing])
 
     # Create a list to hold the data for the table
     data = [
@@ -473,13 +501,17 @@ def generate_pdf_report(request, project_id):
 
     table.setStyle(style)
 
+    story.append(table)
+
     # Build the PDF document
     doc.build(paragraphs + [table])
     buffer.seek(0)
 
+    pdf_filename = f"{project.name}_bug_report.pdf"
+
     # Create the HttpResponse object with the appropriate PDF headers
     response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{project.name}_bug_report.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
 
     return response
 
@@ -557,11 +589,11 @@ def project_bar_chart(request, project_id):
 
 @login_required
 def send_mail_bug_report(request, project_id):
-
     project = get_object_or_404(Project, pk=project_id)
     selected_project = project_id
 
     bugs = Bug.objects.filter(project=project)
+    bugs.reporter = request.user.username
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -592,6 +624,7 @@ def send_mail_bug_report(request, project_id):
     # Create a list to hold the data for the paragraphs
     paragraphs = [
         Paragraph(f'Project Name: {project.name}', getSampleStyleSheet()['Heading1']),
+        Paragraph(f'Bug Reports by: {bugs.reporter}', getSampleStyleSheet()['Heading3']),
         Paragraph(f'Status Count:', getSampleStyleSheet()['Heading3']),
         Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
