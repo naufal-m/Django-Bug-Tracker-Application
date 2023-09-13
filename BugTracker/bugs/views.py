@@ -1,5 +1,9 @@
 import time
 from datetime import datetime
+import json
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.db import connection
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -7,7 +11,7 @@ from django.db.models import Q, Max, Count
 from io import BytesIO
 
 from .models import Bug, Profile, BugHistory, Image, Project
-from .forms import BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm, UpdateBugForm
+from .forms import (BugForm, ProjectForm, Project, SignUpForm, ForgotPassword, PasswordResetForm, UpdateBugForm)
 from django.http import JsonResponse, HttpResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -26,7 +30,7 @@ from django.views.generic import TemplateView
 
 import uuid
 from .emails import (send_forget_password_mail, send_password_change_ack, send_bug_assigned_email,
-                     send_registration_invitation_email, send_project_invitation_email, )
+                     send_registration_invitation_email, send_project_invitation_email)
 
 # Create your views here.
 
@@ -172,12 +176,7 @@ def reset_password(request, token):
 @login_required
 def project_list(request):
     user = request.user
-    # projects = Project.objects.all()
-
     projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
-
-    # for project in user_projects:
-    #     project.code = project.name[:3].upper()
 
     template_name = 'bugs/project_list.html'
     context = {
@@ -300,6 +299,7 @@ def bug_list(request, project_id):
     }
 
     return render(request, template_name, context)
+
 
 @login_required
 def create_bug(request, project_id):
@@ -499,7 +499,8 @@ def home_page(request):
         close_count = Bug.objects.filter(project=project, status='Close').count()
         done_count = Bug.objects.filter(project=project, status='Done').count()
 
-        status_total_count = open_count + in_progress_count + reopen_count + done_count + close_count
+        status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
+        status_total_count = sum(status_counts)
 
         project_info = {
             'project': project,
@@ -510,6 +511,7 @@ def home_page(request):
             'close_count': close_count,
             'done_count': done_count,
             'bug_list_url': reverse('bug_list', args=[project.id]),
+            'bar_chart_url': reverse('project_chart', args=[project.id]),
         }
         project_data.append(project_info)
 
@@ -517,5 +519,167 @@ def home_page(request):
     context = {
         'user': user,
         'project_data': project_data,
+    }
+    return render(request, template_name, context)
+
+
+@login_required
+def project_bar_chart(request, project_id):
+    project = Project.objects.get(id=project_id)
+
+    # Calculate bug counts by status
+    open_count = Bug.objects.filter(project=project_id, status='Open').count()
+    in_progress_count = Bug.objects.filter(project=project_id, status='In Progress').count()
+    reopen_count = Bug.objects.filter(project=project_id, status='Re-open').count()
+    close_count = Bug.objects.filter(project=project_id, status='Close').count()
+    done_count = Bug.objects.filter(project=project_id, status='Done').count()
+
+    status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
+    status_labels = ['Open', 'In Progress', 'Re-open', 'Done', 'Close']
+
+    status_counts_json = json.dumps(status_counts)
+    status_labels_json = json.dumps(status_labels)
+
+    template_name = 'bugs/project_bar_chart.html'
+    context = {
+        'project': project,
+        'open_count': open_count,
+        'in_progress_count': in_progress_count,
+        'reopen_count': reopen_count,
+        'close_count': close_count,
+        'done_count': done_count,
+        'status_counts_json': status_counts_json,
+        'status_labels_json': status_labels_json,
+    }
+
+    return render(request, template_name, context)
+
+
+@login_required
+def send_mail_bug_report(request, project_id):
+
+    project = get_object_or_404(Project, pk=project_id)
+    selected_project = project_id
+
+    bugs = Bug.objects.filter(project=project)
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+                SELECT distinct (auth_user.email)
+                FROM auth_user
+                INNER JOIN bugs_bug
+                ON auth_user.id = bugs_bug.assigned_to_id
+                INNER JOIN bugs_project
+                ON bugs_bug.project_id = bugs_project.id
+                WHERE bugs_project.id = %s;
+            """,
+            [selected_project]
+        )
+        email_list = [row[0] for row in cursor.fetchall()]
+
+    # Calculate bug counts by status
+    open_count = bugs.filter(status='Open').count()
+    in_progress_count = bugs.filter(status='In Progress').count()
+    reopen_count = bugs.filter(status='Re-open').count()
+    close_count = bugs.filter(status='Close').count()
+    done_count = bugs.filter(status='Done').count()
+
+    # Create a buffer to store the PDF content
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=portrait(A4))
+
+    # Create a list to hold the data for the paragraphs
+    paragraphs = [
+        Paragraph(f'Project Name: {project.name}', getSampleStyleSheet()['Heading1']),
+        Paragraph(f'Status Count:', getSampleStyleSheet()['Heading3']),
+        Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'Re-open:        {reopen_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'Close:          {close_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'Done:           {done_count}', getSampleStyleSheet()['Normal']),
+        PageBreak()  # Add a page break before the table
+    ]
+
+    # Create a ReportLab PDF document
+    doc = SimpleDocTemplate(buffer, pagesize=portrait(letter))
+    story = []
+
+    # Create a list to hold the data for the table
+    data = [
+        ['Bug Report:'],
+        [
+            'Bug ID',
+            'Title',
+            'Description',
+            'Status',
+            'Created At',
+            'Created By',
+        ]
+    ]
+
+    # Add data from the queryset to the table
+    for bug in bugs:
+        # images = [str(image.image) for image in bug.bug_images.all()]
+
+        # Wrap the title and description text
+        title_wrapped = "\n".join(textwrap.wrap(bug.title, width=25))
+        description_wrapped = "\n".join(textwrap.wrap(bug.description, width=40))
+
+        data.append([
+            bug.bug_id,
+            title_wrapped,
+            description_wrapped,
+            bug.status,
+            bug.created_at.strftime('%d-%m-%Y %I:%M %p'),
+            bug.reporter
+        ])
+
+    # col_widths = [50, 200,None, None,None]
+
+    # Create the table and style
+    table = Table(data)
+
+    # table = LongTable(data, colWidths=col_widths)
+    style = TableStyle([
+        ('BACKGROUND', (0, 1), (-1, 1), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 1), (-1, 1), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12)
+    ])
+    # ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    # ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+    # Add line separators
+    for i in range(1, len(data)):
+        style.add('LINEBELOW', (0, i), (-1, i), 1, colors.black)
+
+    table.setStyle(style)
+
+    # Build the PDF document
+    doc.build(paragraphs + [table])
+    buffer.seek(0)
+
+    pdf_filename = f"{project.name}_bug_report.pdf"
+
+    # Create the HttpResponse object with the appropriate PDF headers
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+    # Send an email with the PDF attached
+    subject = 'Bug Report for Project: ' + project.name
+    message = 'Please find the attached bug report for the project.'
+    from_email = settings.EMAIL_HOST_USER  # Replace with your email address
+    recipient_list = email_list  # Replace with the recipient's email address
+
+    email = EmailMessage(subject, message, from_email, recipient_list)
+    email.attach(pdf_filename, response.content, 'application/pdf')
+    email.send()
+
+    template_name = 'bugs/send_report_response.html'
+    context = {
+        'project_id': project_id,
     }
     return render(request, template_name, context)

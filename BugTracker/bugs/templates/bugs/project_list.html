@@ -32,7 +32,7 @@
         <tbody>
             {% for project in projects %}
             <tr>
-                <td>{{ project.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td><a style="color: #386fa7;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
                 <td><span style="color: #b8253b;">{{ project.code }}</span></td>
                 <td>{{ project.created_at }}</td>

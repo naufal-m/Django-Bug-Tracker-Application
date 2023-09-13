@@ -116,3 +116,4 @@ def send_registration_invitation_email(project, email):
         html_message=message,
         fail_silently=False
     )
+

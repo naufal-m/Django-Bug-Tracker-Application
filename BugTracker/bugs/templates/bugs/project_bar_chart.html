@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Chart</title>
+
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!--    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
+
+</head>
+<body>
+    <div  class="bread-crumb"  style="margin-left: 200px;">
+        <p><span style="font-size:20px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'home' %}">Home</a></p>
+    </div>
+    <div class="container">
+        <h4>Chart View</h4>
+        <canvas id="statusChart" width="300" height="100"></canvas>
+
+        <div id="status-data" data-status-counts="{{ status_counts_json|safe }}"></div>
+        <div id="labels-data" data-status-labels="{{ status_labels_json|safe }}"></div>
+    </div>
+</body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="{% static 'js/reportchart.js' %}"></script>
+</html>

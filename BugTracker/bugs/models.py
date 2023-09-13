@@ -92,3 +92,4 @@ class BugHistory(models.Model):
     def __str__(self):
         return f'BugHistory for Bug {self.bug_id}'
 
+

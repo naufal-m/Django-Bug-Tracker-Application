@@ -212,4 +212,7 @@
 <p style="margin-top: 10px;"> <a  href="{% url 'generate_pdf_report' project_id=project_id %}" class="btn-custom-report" >
     Click here to download the report</a></p>
 
+<p style="margin-top: 10px;"> <a  href="{% url 'send_mail_bug_report' project_id=project_id %}" class="btn-custom-report" >
+    Click here to send mail</a></p>
+
 {% endblock %}
