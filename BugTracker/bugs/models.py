@@ -35,7 +35,7 @@ class Bug(models.Model):
         ('In Progress', 'In Progress'),
         ('Re-open', 'Re-open'),
         ('Done', 'Done'),
-        ('Close', 'Close'),
+        ('Closed', 'Closed'),
     ]
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)  # Add this line
@@ -77,7 +77,7 @@ class BugHistory(models.Model):
         ('In Progress', 'In Progress'),
         ('Re-open', 'Re-open'),
         ('Done', 'Done'),
-        ('Close', 'Close'),
+        ('Closed', 'Closed'),
     ]
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     bug = models.ForeignKey(Bug, on_delete=models.CASCADE)  # Add this line to link BugHistory to Bug

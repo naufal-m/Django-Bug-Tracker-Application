@@ -72,7 +72,7 @@ button[type="submit"]:hover {
 a {
     color: #007bff;
     text-decoration: none;
-    margin-left: 10px;
+    margin-left: -5px;
 }
 
 a:hover {

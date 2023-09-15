@@ -19,9 +19,9 @@
     <p style="background-color: #faebd7; padding: 10px;">
         Open: <span style="color: red;">  {{ open_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         In Progress:<span style="color: blue;">  {{ in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Re-open:<span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Re-opened:<span style="color: brown;">  {{ reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Done:<span style="color: green;">  {{ done_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Close:<span style="color: grey;">  {{ close_count }}</span>
+        Closed:<span style="color: grey;">  {{ close_count }}</span>
     </p>
 </div>
 
@@ -32,8 +32,8 @@
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
         <option value="Re-open">Re-open</option>
-        <option value="Close">Close</option>
         <option value="Done">Done</option>
+        <option value="Close">Closed</option>
     </select>
 
     <div style="margin-left: 10px;">
@@ -128,7 +128,7 @@
                             {% if last_updated_times|get_item:bug.id %}
                                 <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">updated&nbsp; {{ last_updated_times|get_item:bug.id }}</p>
                             {% endif %}
-                            {% if bug.status == "Close" %}
+                            {% if bug.status == "Closed" %}
                                 <p style="color: #b1aeae; font-size: 14px; font-family: inherit;">resolved&nbsp; {{ last_closed_updated_times|get_item:bug.id }}</p>
                             {% endif %}
                         </div>
@@ -209,8 +209,8 @@
 
 </div>
 
-<p style="margin-top: 20px;">Export <a  href="{% url 'generate_pdf_report' project_id=project_id %}"
-                                        class="btn-custom-report" style="color: #b8253b;">report</a></p>
+<p style="margin-top: 20px;">Download <a  href="{% url 'generate_pdf_report' project_id=project_id %}"
+                                        class="btn-custom-report" style="color: #b8253b;">Bug report</a></p>
 
 <p style="margin-top: -20px;">Click here to <a  href="{% url 'send_mail_bug_report' project_id=project_id %}"
                                                class="btn-custom-report" style="color: #b8253b;">send mail</a></p>

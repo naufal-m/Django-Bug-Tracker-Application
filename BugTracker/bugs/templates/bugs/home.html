@@ -11,8 +11,8 @@
 
 </head>
 <body>
-    <div  class="bread-crumb"  style="margin-left: 200px;">
-        <p><span style="font-size:20px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'login' %}">Logout</a></p>
+    <div  class="bread-crumb"  style="margin-left: 180px;">
+        <p><span style="font-size:16px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'login' %}">&nbsp;Logout</a></p>
     </div>
     <div class="container">
         <p>Check your Bug status summary of each project which assigned. Click here to view you project lists
@@ -20,7 +20,7 @@
 
         {% for project_info in project_data %}
                 <h6>
-                <a style="color: #2b4a6a;" href="{{ project_info.bug_list_url }}">{{ project_info.project }}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a style="color: #2b4a6a; margin-left: 2px;" href="{{ project_info.bug_list_url }}">{{ project_info.project }}</a>&nbsp;&nbsp;&nbsp;&nbsp;
                 </h6>
 
             <p style="background-color: #faebd7; padding: 10px;">
@@ -29,7 +29,7 @@
                 In Progress:<span style="color: blue;">  {{ project_info.in_progress_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 Re-open:<span style="color: brown;">  {{ project_info.reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 Done:<span style="color: green;">  {{ project_info.done_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                Close:<span style="color: grey;">  {{ project_info.close_count }}</span>
+                Closed:<span style="color: grey;">  {{ project_info.close_count }}</span>
                 <span style="color: #2b4a6a; margin-left: 445px; font-size: 13px;">
                     <a style="color: #2b4a6a;" href="{{ project_info.bar_chart_url }}">Chart View</a></span>
             </p>

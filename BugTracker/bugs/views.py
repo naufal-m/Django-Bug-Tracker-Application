@@ -253,8 +253,8 @@ def bug_list(request, project_id):
     # Calculate bug counts by status
     open_count = Bug.objects.filter(project=project_id, status='Open').count()
     in_progress_count = Bug.objects.filter(project=project_id, status='In Progress').count()
-    reopen_count = Bug.objects.filter(project=project_id, status='Re-open').count()
-    close_count = Bug.objects.filter(project=project_id, status='Close').count()
+    reopen_count = Bug.objects.filter(project=project_id, status='Re-opened').count()
+    close_count = Bug.objects.filter(project=project_id, status='Closed').count()
     done_count = Bug.objects.filter(project=project_id, status='Done').count()
 
     #   assigned user filter
@@ -279,7 +279,7 @@ def bug_list(request, project_id):
 
         last_closed_updated_time = BugHistory.objects.filter(
             bug=bug,
-            status='Close'
+            status='Closed'
         ).aggregate(Max('updated_at'))['updated_at__max']
 
         last_updated_times[bug.id] = last_updated_time
@@ -400,17 +400,18 @@ def generate_pdf_report(request, project_id):
     # Calculate bug counts by status
     open_count = bugs.filter(status='Open').count()
     in_progress_count = bugs.filter(status='In Progress').count()
-    reopen_count = bugs.filter(status='Re-open').count()
-    close_count = bugs.filter(status='Close').count()
+    reopen_count = bugs.filter(status='Re-opened').count()
     done_count = bugs.filter(status='Done').count()
+    close_count = bugs.filter(status='Closed').count()
+
 
     # Create a list to hold the data for the chart
     status_data = [
         ('Open', open_count),
         ('In Progress', in_progress_count),
-        ('Re-open', reopen_count),
+        ('Re-opened', reopen_count),
         ('Done', done_count),
-        ('Close', close_count),
+        ('Closed', close_count),
     ]
 
     drawing = Drawing(400, 200)
@@ -438,8 +439,8 @@ def generate_pdf_report(request, project_id):
         Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'Re-open:        {reopen_count}', getSampleStyleSheet()['Normal']),
-        Paragraph(f'Close:          {close_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'Done:           {done_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'Closed:          {close_count}', getSampleStyleSheet()['Normal']),
         PageBreak()  # Add a page break before the table
     ]
 
@@ -613,9 +614,9 @@ def send_mail_bug_report(request, project_id):
     # Calculate bug counts by status
     open_count = bugs.filter(status='Open').count()
     in_progress_count = bugs.filter(status='In Progress').count()
-    reopen_count = bugs.filter(status='Re-open').count()
-    close_count = bugs.filter(status='Close').count()
+    reopen_count = bugs.filter(status='Re-opened').count()
     done_count = bugs.filter(status='Done').count()
+    close_count = bugs.filter(status='Closed').count()
 
     # Create a buffer to store the PDF content
     buffer = BytesIO()
@@ -629,8 +630,8 @@ def send_mail_bug_report(request, project_id):
         Paragraph(f'Open:           {open_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'In Progress:    {in_progress_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'Re-open:        {reopen_count}', getSampleStyleSheet()['Normal']),
-        Paragraph(f'Close:          {close_count}', getSampleStyleSheet()['Normal']),
         Paragraph(f'Done:           {done_count}', getSampleStyleSheet()['Normal']),
+        Paragraph(f'Closed:          {close_count}', getSampleStyleSheet()['Normal']),
         PageBreak()  # Add a page break before the table
     ]
 
@@ -703,7 +704,7 @@ def send_mail_bug_report(request, project_id):
 
     # Send an email with the PDF attached
     subject = 'Bug Report for Project: ' + project.name
-    message = 'Please find the attached bug report for the project.'
+    message = bugs.reporter + ' share the bug-report of project ' + project.name + 'Check the attachment for the same...'
     from_email = settings.EMAIL_HOST_USER  # Replace with your email address
     recipient_list = email_list  # Replace with the recipient's email address
 
