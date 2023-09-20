@@ -13,37 +13,37 @@
 </head>
 <body>
 
-    <div class="container access-page signup-form-custom">
-        <form method="post" action="{% url 'signup' %}">
-            {% csrf_token %}
-            <h2 style="margin-bottom: 30px; margin-top: -10px; color: #b8253b;">Signup Here</h2>
+<div class="container access-page signup-form-custom">
+    <form method="post" action="{% url 'signup' %}">
+        {% csrf_token %}
+        <h2 style="margin-bottom: 30px; margin-top: -10px; color: #b8253b;">Signup Here</h2>
 
-            <label class="access-label" for="username">Username</label><br>
-            {{ form.username }}<br>
-            <label class="access-label" for="email">Email</label><br>
-            {{ form.email }}<br>
-            <label class="access-label" for="password1">Password</label><br>
-            {{ form.password1 }}<br>
-            <label class="access-label" for="password2">Confirm Password</label><br>
-            {{ form.password2 }}<br>
+        <label class="access-label" for="username">Username</label><br>
+        {{ form.username }}<br>
+        <label class="access-label" for="email">Email</label><br>
+        {{ form.email }}<br>
+        <label class="access-label" for="password1">Password</label><br>
+        {{ form.password1 }}<br>
+        <label class="access-label" for="password2">Confirm Password</label><br>
+        {{ form.password2 }}<br>
 
-            <div class="sign-up-button">
-                <button type="submit">Sign Up</button>
-            </div>
-
-            <p style="margin-top: 20px;"> Already have an account? <a href='{% url "login" %}'>&nbsp;Login</a></p>
-        </form>
-
-        <div id="hideMeAfter5Seconds">
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+        <div class="sign-up-button">
+            <button type="submit">Sign Up</button>
         </div>
+
+        <p style="margin-top: 20px;"> Already have an account? <a href='{% url "login" %}'>&nbsp;Login</a></p>
+    </form>
+
+    <div id="hideMeAfter5Seconds">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     </div>
+</div>
 
 </body>
 </html>

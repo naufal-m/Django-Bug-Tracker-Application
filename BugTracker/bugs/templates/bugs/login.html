@@ -12,34 +12,36 @@
 </head>
 <body>
 
-    <div class="container access-page form-group">
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <h2 style="margin-bottom: 30px; margin-top: -10px; color: #b8253b;">Login Here</h2>
+<div class="container access-page form-group">
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <h2 style="margin-bottom: 30px; margin-top: -10px; color: #b8253b;">Login Here</h2>
 
-            <div id="hideMeAfter5Seconds">
-                {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </div>
+        <div id="hideMeAfter5Seconds">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
 
-            <label class="access-label" for="username">Username</label><br>
-            <input class="form-field" type="text" placeholder="Enter username" name="username" id="username" required="required"><br>
+        <label class="access-label" for="username">Username</label><br>
+        <input class="form-field" type="text" placeholder="Enter username" name="username" id="username"
+               required="required"><br>
 
-            <label class="access-label" for="password">Password</label><br>
-            <input class="form-field" type="password" placeholder="Enter Password" name="password" id="password" required="required"><br>
-            <div class="login-button">
-                <button type="submit">Log in</button>
-            </div>
+        <label class="access-label" for="password">Password</label><br>
+        <input class="form-field" type="password" placeholder="Enter Password" name="password" id="password"
+               required="required"><br>
+        <div class="login-button">
+            <button type="submit">Log in</button>
+        </div>
 
-            <p style="font-weight: 600;"> Don't have an account? <a href='{% url "signup" %}'>&nbsp;Sign up</a></p>
-            <p style="font-weight: 600; margin-left: 6px;"><a href='{% url "forgot_password" %}'>Lost your password?</a></p>
-        </form>
-    </div>
+        <p style="font-weight: 600;"> Don't have an account? <a href='{% url "signup" %}'>&nbsp;Sign up</a></p>
+        <p style="font-weight: 600; margin-left: 6px;"><a href='{% url "forgot_password" %}'>Lost your password?</a></p>
+    </form>
+</div>
 
 </body>
 </html>

@@ -1,0 +1,139 @@
+{% extends 'bugs/base.html' %}
+
+{% block title %}Bug Detail of {{ bug.bug_id }}{% endblock %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" xmlns="http://www.w3.org/1999/html">
+
+{% block content %}
+<div class="bug-detail-page">
+
+<div class="bread-crumb">
+    <p><a style="color: #b8253b;" href="{% url 'home' %}">Home</a> | <a style="color: #b8253b;" href="{% url 'bug_list' project_id=project_id %}">Bug List</a> |
+        <span style="font-size:14px;">{{ bug.bug_id }}</span></p>
+</div>
+
+<h5 style="color: #b8253b; font-size:18px; padding-bottom: 10px;">Bug Detail</h5><hr>
+
+<p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">ID: </span>&nbsp;&nbsp;<span
+        style="font-weight: 400;"> {{ bug.bug_id }}</span></p>
+<p style="margin-bottom: 2px;"><span
+        style="font-weight:bold; color: #2b4a6a;">Reported by: </span>&nbsp;&nbsp;<span
+        style="font-weight: 400;">{{ bug.reporter }}</span></p>
+<p><span style="font-weight:bold; color: #2b4a6a;">Assigned_to: </span>&nbsp;&nbsp;<span
+        style="font-weight: 400;">{{ bug.assigned_to }}</span></p>
+
+<hr>
+
+<p><span style="font-weight:bold; color: #2b4a6a;">Title:</span><br><span
+        style="font-weight: 400;">{{ bug.title }}</span>
+</p>
+<p style="margin-top: -10px;"><span style="font-weight:bold; color: #2b4a6a;">Description:</span><br><span
+        style="font-weight: 400;">{{ bug.description }}</span></p>
+<p style="margin-top: -10px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;
+    <span style="font-weight: 400; padding: 8px 10px 9px 10px; cursor: pointer;"
+          class=" status-button {% if bug.status == 'Open' %}status-open
+            {% elif bug.status == 'In Progress' %}status-in-progress
+            {% elif bug.status == 'Re-open' %}status-reopen
+            {% elif bug.status == 'Done' %}status-done
+            {% elif bug.status == 'Closed' %}status-closed{% endif %}">{{ bug.status }}</span></p>
+<hr>
+
+<!-- Display the uploaded image -->
+{% if bug.images %}
+<p style="font-weight:bold; color: #2b4a6a;">Image:</p>
+<a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
+    <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image"></a>
+{% endif %}
+<hr>
+
+<!--                        Show the times of bug create/last updated/status closed dates and times-->
+<div class="update-time-logs">
+<p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">created&nbsp;&nbsp;&nbsp;{{ bug.created_at }}</p>
+{% if last_updated_time %}
+    <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -5px;">updated&nbsp;&nbsp;{{ last_updated_time }}</p>
+{% endif %}
+{% if bug.status == "Closed" %}
+    <p style="color: #b1aeae; font-size: 14px; font-family: inherit;">resolved&nbsp;&nbsp;{{ last_closed_updated_time }}</p>
+{% endif %}
+<hr>
+</div>
+</div>
+
+
+<div class="bug-update-form">
+
+    <!-- Add status edit form or Bug update form  -->
+    <form class="update-status-form" method="post"
+          action="{% url 'update_bug_status' project_id=project_id bug_id=bug.id %}">
+
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="commandInput"><span
+                    style="font-weight:bold; color: #2b4a6a;">Comments:</span></label>
+            <textarea placeholder="Add your comment..." class="form-control" name="command2"
+                      id="commandInput" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="images"><span
+                    style="font-weight:bold; color: #2b4a6a;"></span></label>
+            <input style="padding: 0px; font-size: 13px; cursor: pointer; margin-top: -10px;"
+                   type="file" class="form-control-file" id="images" name="images">
+        </div>
+
+        <label for="status"><span
+                style="font-weight:bold; color: #2b4a6a;">Change Status:</span></label>
+        <select name="status" id="status" style="margin-left: 5px; border: 1px solid #ccc;
+                            border-radius: 4px; box-sizing: border-box; color:#323131;">
+            {% for choice in bug.STATUS_CHOICES %}
+            <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="hidden" id="command" name="command" value="{{ bug.command }}">
+        <button style="background-color: #2b4a6a; padding: 4px 12px 4px 12px; margin-left: 900px;
+                                font-size: 14px; border-color: #2b4a6a;" type="submit" class="btn btn-primary">Update
+        </button>
+    </form>
+
+    <hr>
+
+    <!-- Success message container -->
+    <div class="success-message"></div>
+</div>
+
+<div class="bug-history">
+    <div class="history" style="flex: 100%;">
+        <p style="border-bottom: 3px solid #ccc; margin-bottom:12px;">
+            <span style="font-weight:bold; color: #2b4a6a; font-size: 16px;">Comments:</span>
+        </p>
+        <p style="font-size: 14px;"><span style="color:#b8253b;">{{ bug.reporter }}</span>
+            created this bug and assigned to {{ bug.assigned_to }} on {{ bug.created_at }}</p>
+        <hr>
+
+        <div class="history-comments">
+            {% for entry in bug_history_entries %}
+            {% if entry.bug.bug.id == bug_id %}
+            {% if entry.bug_id_code == bug.bug_id %}
+            <p><span style="color: #b8253b;">{{ entry.status_assigned_user }}</span>,
+                &nbsp;&nbsp;&nbsp;&nbsp;{{ entry.updated_at }}</p>
+            <p style="margin-top: -20px;"><span
+                    style="font-weight:bold; color: #2b4a6a;">Comments:</span>
+                &nbsp;&nbsp;&nbsp; {{ entry.comments }}, and the status is changed to
+                <span style="color:#b8253b;">{{ entry.status }}</span></p>
+            {% if entry.images %}
+            <a href="{{ entry.images.url }}" data-lightbox="image-gallery">
+                <img src="{{ entry.images.url }}" alt="Bug Image"
+                     style="margin-top:-10px; margin-left: 5px; max-width: 300px; height: 150px;">
+            </a>
+            {% endif %}
+            <hr>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

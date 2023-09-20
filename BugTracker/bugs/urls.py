@@ -14,10 +14,11 @@ urlpatterns = [
     path('projects/create/', views.create_project, name='create_project'),
 
     path('create/bugs/<int:project_id>/', views.bug_list, name='bug_list'),
+    path('bugs/<int:project_id>/<int:bug_id>', views.bug_detail, name='bug_detail'),
     path('bugs/<int:project_id>/create/', views.create_bug, name='create_bug'),
     path('bugs/<int:project_id>/update-status/<int:bug_id>/', views.update_bug_status, name='update_bug_status'),
 
     path('bugs/report/<int:project_id>/', views.generate_pdf_report, name='generate_pdf_report'),
     path('bugs/mail/<int:project_id>/', views.send_mail_bug_report, name='send_mail_bug_report'),
-    path('project/<int:project_id>/chart/', views.project_bar_chart, name='project_chart')
+    path('project/<int:project_id>/chart/', views.project_bar_chart, name='project_chart'),
 ]

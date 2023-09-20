@@ -109,7 +109,7 @@ td:nth-child(2) {
 }
 
 .bug-image {
-    max-width: 80%;
+    max-width: 25%;
     height: auto;
 }
 
@@ -228,3 +228,42 @@ input [type="password"]
     margin-bottom: -5px;
     font-weight: 400;
 }
+
+.bug-detail-page {
+    margin-left: -130px;
+}
+
+.bug-update-form, .bug-history {
+    margin-left: -100px;
+}
+
+.status-button {
+    display: inline-block; /* Make the background size adjust to content */
+    line-height: 7px; /* Adjust line height to vertically center the content */
+    border: none;
+    text-align: center;
+    border-radius: 8px;
+    color: white;
+    vertical-align: middle;
+}
+
+.status-open {
+    background-color: #ab1b1b;
+}
+
+.status-in-progress {
+    background-color: #2e79b9;
+}
+
+.status-reopen {
+    background-color: #b72c00;
+}
+
+.status-done {
+    background-color: #0e8b0e;
+}
+
+.status-closed {
+    background-color: #5a5757;
+}
+

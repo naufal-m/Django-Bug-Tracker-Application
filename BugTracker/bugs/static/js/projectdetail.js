@@ -14,3 +14,20 @@ $(document).ready(function () {
             $('#projectDescription').text(projectDescription);
         });
     });
+
+    story$(document).ready(function () {
+        $('.view-story').click(function () {
+            var storyId = $(this).data('story-id');
+            var storyName = $(this).data('story-name');
+            var storyCode = $(this).data('story-code');
+            var createdUser = $(this).data('created-user');
+            var assignedUsers = $(this).data('assigned-user');
+            var storyDescription = $(this).data('description');
+
+            $('#storyName').text(storyName);
+            $('#projectCode').text(storyCode);
+            $('#createdUser').text(createdUser);
+            $('#assignedUsers').text(assignedUsers);
+            $('#storyDescription').text(storyDescription);
+        });
+    });

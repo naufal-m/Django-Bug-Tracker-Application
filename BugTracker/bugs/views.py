@@ -262,6 +262,56 @@ def bug_list(request, project_id):
     if assigned_filter and assigned_filter != 'all':
         bugs = bugs.filter(assigned_to=assigned_filter)
 
+    # creator_user = project.created_user
+    # associated_user = project.users.all()
+    #
+    # combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
+    # bug_history_entries = BugHistory.objects.all()
+    #
+    # # last time for status/bug update as well as status close
+    # last_updated_times = {}
+    # last_closed_updated_times = {}
+    #
+    # for bug in bugs:
+    #     last_updated_time = BugHistory.objects.filter(
+    #         bug=bug,
+    #     ).aggregate(Max('updated_at'))['updated_at__max']
+    #
+    #     last_closed_updated_time = BugHistory.objects.filter(
+    #         bug=bug,
+    #         status='Closed'
+    #     ).aggregate(Max('updated_at'))['updated_at__max']
+    #
+    #     last_updated_times[bug.id] = last_updated_time
+    #     last_closed_updated_times[bug.id] = last_closed_updated_time
+
+    template_name = 'bugs/bug_list.html'
+    context = {
+        'bugs': bugs,
+        'project_name': project.name,
+        'project_id': project_id,
+        # 'users': combined_users,
+        'open_count': open_count,
+        'in_progress_count': in_progress_count,
+        'reopen_count': reopen_count,
+        'close_count': close_count,
+        'done_count': done_count,
+        # 'bug_history_entries': bug_history_entries,
+        # 'last_updated_times': last_updated_times,
+        # 'last_closed_updated_times': last_closed_updated_times,
+    }
+
+    return render(request, template_name, context)
+
+
+
+@login_required
+def bug_detail(request, project_id, bug_id):
+    bug = get_object_or_404(Bug, pk=bug_id)
+    print(bug)
+
+    project = Project.objects.get(id=project_id)
+
     creator_user = project.created_user
     associated_user = project.users.all()
 
@@ -272,35 +322,28 @@ def bug_list(request, project_id):
     last_updated_times = {}
     last_closed_updated_times = {}
 
-    for bug in bugs:
-        last_updated_time = BugHistory.objects.filter(
-            bug=bug,
-        ).aggregate(Max('updated_at'))['updated_at__max']
 
-        last_closed_updated_time = BugHistory.objects.filter(
-            bug=bug,
-            status='Closed'
-        ).aggregate(Max('updated_at'))['updated_at__max']
+    last_updated_time = BugHistory.objects.filter(
+        bug=bug,
+    ).aggregate(Max('updated_at'))['updated_at__max']
 
-        last_updated_times[bug.id] = last_updated_time
-        last_closed_updated_times[bug.id] = last_closed_updated_time
+    last_closed_updated_time = BugHistory.objects.filter(
+        bug=bug,
+        status='Closed'
+    ).aggregate(Max('updated_at'))['updated_at__max']
 
-    template_name = 'bugs/bug_list.html'
+    last_updated_times[bug.id] = last_updated_time
+    last_closed_updated_times[bug.id] = last_closed_updated_time
+
+    template_name = "bugs/bug_detail.html"
     context = {
-        'bugs': bugs,
-        'project_name': project.name,
+        'bug': bug,
         'project_id': project_id,
         'users': combined_users,
-        'open_count': open_count,
-        'in_progress_count': in_progress_count,
-        'reopen_count': reopen_count,
-        'close_count': close_count,
-        'done_count': done_count,
         'bug_history_entries': bug_history_entries,
-        'last_updated_times': last_updated_times,
-        'last_closed_updated_times': last_closed_updated_times,
+        'last_updated_time': last_updated_time,
+        'last_closed_updated_time': last_closed_updated_time,
     }
-
     return render(request, template_name, context)
 
 
@@ -373,7 +416,7 @@ def update_bug_status(request, project_id, bug_id):
             bug.comment = command
             bug.save()
 
-            template_name = 'bugs/bug_list.html'
+            template_name = 'bugs/bug_list1.html'
             context = {
                 'form': form,
                 'project_id': project_id,
@@ -384,7 +427,7 @@ def update_bug_status(request, project_id, bug_id):
     else:
         form = UpdateBugForm()
 
-    template_name = 'bugs/bug_list.html'
+    template_name = 'bugs/bug_list1.html'
     context = {
         'form': form,
     }
@@ -717,3 +760,5 @@ def send_mail_bug_report(request, project_id):
         'project_id': project_id,
     }
     return render(request, template_name, context)
+
+

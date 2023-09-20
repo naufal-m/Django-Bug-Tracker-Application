@@ -7,16 +7,17 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<!--    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
+    <!--    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
 
 </head>
 <body>
-    <div  class="bread-crumb" style="margin-left: 200px;">
-        <p style="font-size:16px;">Back to <a style="color: #b8253b;" href="{% url 'bug_list' project_id=project_id %}">Bug List</a></p>
-    </div>
-    <div class="container">
-        <p>Bug report send successfully.....</p>
-    </div>
+<div class="bread-crumb" style="margin-left: 200px;">
+    <p style="font-size:16px;">Back to <a style="color: #b8253b;" href="{% url 'bug_list' project_id=project_id %}">Bug
+        List</a></p>
+</div>
+<div class="container">
+    <p>Bug report send successfully.....</p>
+</div>
 
 </body>
 </html>
