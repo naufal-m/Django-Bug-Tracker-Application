@@ -1,4 +1,3 @@
-// statusupdate.js
 $(document).ready(function () {
     $('form.update-status-form').on('submit', function (event) {
         event.preventDefault();
@@ -21,27 +20,20 @@ $(document).ready(function () {
             processData: false,  // Disable processData for FormData
             success: function (data) {
                 console.log(data);
-                // Update the success message in the modal body
-                var modal = form.closest('.modal');
                 var successMessage = '<p class="text-success">' + data.message + '</p>';
-                modal.find('.modal-body .success-message').html(successMessage);
+                $('.success-message').html(successMessage);
 
-//
 //                // Clear the command field
                 form.find('input[name="command"]').val('');
 
-                // Close the modal after a delay
+                // Refresh the page after a delay
                 setTimeout(function () {
-                    modal.modal('hide');
-                }, 3000); // 2000 milliseconds (2 seconds) delay
+                    location.reload();
+                }, 3000); // 3000 milliseconds (3 seconds) delay
             },
             error: function (xhr) {
                 // Handle error if needed
             }
         });
     });
-    $('.modal').on('hidden.bs.modal', function () {
-        location.reload();
-    });
 });
-

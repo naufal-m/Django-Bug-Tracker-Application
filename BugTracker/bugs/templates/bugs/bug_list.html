@@ -72,7 +72,7 @@
             <td>{{ bug.created_at }}</td>
             <td>{{ bug.reporter }}</td>
             <td>{{ bug.assigned_to }}</td>
-            <td style="margin-top: 7px; padding-bottom: 10px; vertical-align: middle;" class=" status-button {% if bug.status == 'Open' %}status-open
+            <td style="margin-top: 7px; padding-bottom: 10px; vertical-align: middle; font-size: 12px;" class=" status-button {% if bug.status == 'Open' %}status-open
             {% elif bug.status == 'In Progress' %}status-in-progress
             {% elif bug.status == 'Re-open' %}status-reopen
             {% elif bug.status == 'Done' %}status-done
@@ -87,6 +87,6 @@
                                          class="btn-custom-report" style="color: #b8253b;">Bug report</a></p>
 
 <p style="margin-top: -20px;">Click here to <a href="{% url 'send_mail_bug_report' project_id=project_id %}"
-                                               class="btn-custom-report" style="color: #b8253b;">send mail</a></p>
+                                               class="btn-custom-report" style="color: #b8253b;">send mail</a> the report</p>
 
 {% endblock %}

@@ -262,53 +262,24 @@ def bug_list(request, project_id):
     if assigned_filter and assigned_filter != 'all':
         bugs = bugs.filter(assigned_to=assigned_filter)
 
-    # creator_user = project.created_user
-    # associated_user = project.users.all()
-    #
-    # combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
-    # bug_history_entries = BugHistory.objects.all()
-    #
-    # # last time for status/bug update as well as status close
-    # last_updated_times = {}
-    # last_closed_updated_times = {}
-    #
-    # for bug in bugs:
-    #     last_updated_time = BugHistory.objects.filter(
-    #         bug=bug,
-    #     ).aggregate(Max('updated_at'))['updated_at__max']
-    #
-    #     last_closed_updated_time = BugHistory.objects.filter(
-    #         bug=bug,
-    #         status='Closed'
-    #     ).aggregate(Max('updated_at'))['updated_at__max']
-    #
-    #     last_updated_times[bug.id] = last_updated_time
-    #     last_closed_updated_times[bug.id] = last_closed_updated_time
-
     template_name = 'bugs/bug_list.html'
     context = {
         'bugs': bugs,
         'project_name': project.name,
         'project_id': project_id,
-        # 'users': combined_users,
         'open_count': open_count,
         'in_progress_count': in_progress_count,
         'reopen_count': reopen_count,
         'close_count': close_count,
         'done_count': done_count,
-        # 'bug_history_entries': bug_history_entries,
-        # 'last_updated_times': last_updated_times,
-        # 'last_closed_updated_times': last_closed_updated_times,
     }
 
     return render(request, template_name, context)
 
 
-
 @login_required
 def bug_detail(request, project_id, bug_id):
     bug = get_object_or_404(Bug, pk=bug_id)
-    print(bug)
 
     project = Project.objects.get(id=project_id)
 
@@ -383,7 +354,7 @@ def create_bug(request, project_id):
 @login_required
 def update_bug_status(request, project_id, bug_id):
     if request.method == 'POST':
-        form = UpdateBugForm(request.POST)
+        form = UpdateBugForm(request.POST, request.FILES)
         if form.is_valid():
             bug = Bug.objects.get(id=bug_id)
             project = get_object_or_404(Project, id=bug.project_id)
@@ -416,18 +387,26 @@ def update_bug_status(request, project_id, bug_id):
             bug.comment = command
             bug.save()
 
-            template_name = 'bugs/bug_list1.html'
-            context = {
-                'form': form,
-                'project_id': project_id,
+            #   Prepare a success response
+            response_data = {
+                'message': 'Bug status updated successfully.'
             }
 
-            return render(request, template_name, context)
+            #   Return a JSON response with the success message
+            return JsonResponse(response_data)
+
+            # template_name = 'bugs/bug_detail.html'
+            # context = {
+            #     'form': form,
+            #     'project_id': project_id,
+            # }
+            #
+            # return render(request, template_name, context)
 
     else:
         form = UpdateBugForm()
 
-    template_name = 'bugs/bug_list1.html'
+    template_name = 'bugs/bug_list.html'
     context = {
         'form': form,
     }
@@ -572,7 +551,7 @@ def home_page(request):
         open_count = Bug.objects.filter(project=project, status='Open').count()
         in_progress_count = Bug.objects.filter(project=project, status='In Progress').count()
         reopen_count = Bug.objects.filter(project=project, status='Re-open').count()
-        close_count = Bug.objects.filter(project=project, status='Close').count()
+        close_count = Bug.objects.filter(project=project, status='Closed').count()
         done_count = Bug.objects.filter(project=project, status='Done').count()
 
         status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
@@ -607,11 +586,11 @@ def project_bar_chart(request, project_id):
     open_count = Bug.objects.filter(project=project_id, status='Open').count()
     in_progress_count = Bug.objects.filter(project=project_id, status='In Progress').count()
     reopen_count = Bug.objects.filter(project=project_id, status='Re-open').count()
-    close_count = Bug.objects.filter(project=project_id, status='Close').count()
     done_count = Bug.objects.filter(project=project_id, status='Done').count()
+    close_count = Bug.objects.filter(project=project_id, status='Closed').count()
 
     status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
-    status_labels = ['Open', 'In Progress', 'Re-open', 'Done', 'Close']
+    status_labels = ['Open', 'In Progress', 'Re-open', 'Done', 'Closed']
 
     status_counts_json = json.dumps(status_counts)
     status_labels_json = json.dumps(status_labels)

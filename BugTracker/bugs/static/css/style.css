@@ -18,7 +18,7 @@ body p {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     background-color: white;
@@ -66,13 +66,13 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #648bb3;
+    background-color: #b8253b;
 }
 
 a {
     color: #007bff;
     text-decoration: none;
-    margin-left: -5px;
+    margin-left: 0px;
 }
 
 a:hover {

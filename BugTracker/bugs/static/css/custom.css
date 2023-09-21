@@ -4,7 +4,18 @@ body {
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",
     sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
-
+::-webkit-scrollbar{
+    width:6px;
+}
+::-webkit-scrollbar-track{
+    background:#f1f1f1;
+}
+::-webkit-scrollbar-thumb{
+    background:#2b4a6a;
+}
+::-webkit-scrollbar-thumb:hover{
+    background:#b8253b;
+}
 body p {
     font-weight: 600;
     padding-bottom:5px;
@@ -46,9 +57,13 @@ input[type="file"] {
 
 .history {
     max-width: 100%;
-    max-height: 260px;
+    max-height: 520px;
     overflow-y: auto;
     padding: 5px;
+    border-collapse: separate;
+    border-spacing: 0;
+    flex: 100%;
+    padding-top: 10px;
 }
 
 .status-count {
@@ -77,10 +92,6 @@ td:nth-child(1) {
 th:nth-child(2),
 td:nth-child(2) {
     width: 35%;
-}
-
-.history {
-    padding-top: 10px;
 }
 
 .history div {
@@ -197,12 +208,6 @@ input [type="password"]
     margin-left: 10px;
 }
 
-.history {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-}
-
 .history-entry {
     padding: 10px;
     position: relative;
@@ -229,12 +234,15 @@ input [type="password"]
     font-weight: 400;
 }
 
+/*
 .bug-detail-page {
     margin-left: -130px;
 }
+*/
 
-.bug-update-form, .bug-history {
-    margin-left: -100px;
+.bug-update-form {
+    margin-left: -20px;
+    margin-top: -25px;
 }
 
 .status-button {
@@ -248,22 +256,39 @@ input [type="password"]
 }
 
 .status-open {
-    background-color: #ab1b1b;
+    background-color: #e36464;
 }
 
 .status-in-progress {
-    background-color: #2e79b9;
+    background-color: #5e92bf;
 }
 
 .status-reopen {
-    background-color: #b72c00;
+    background-color: #ff825b;
 }
 
 .status-done {
-    background-color: #0e8b0e;
+    background-color: #69ab69;
 }
 
 .status-closed {
-    background-color: #5a5757;
+    background-color: #a5a4a4;
 }
 
+.page-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.bug-detail-page {
+    flex: 1;
+    width: 1px;
+}
+
+.bug-history {
+    width: 350px;
+}
+
+.bug-update-form-button:hover {
+    background-color: #b8253b;
+}
