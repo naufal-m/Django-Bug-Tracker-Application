@@ -8,15 +8,16 @@
 
 {% block content %}
 <div  class="bread-crumb"  style="margin-left: 18px;">
-    <p><span style="font-size:18px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'home' %}">Home</a> </p>
+    <p><span style="font-size:18px;">{{ user.username }}</span> | <a style="color: #b8253b; text-decoration: none;" href="{% url 'home' %}">Home</a> </p>
 </div>
 <div class="container">
-    <h2 class="project-list-heading">Project List</h2>
-    <h5>Hi, {{ user.username }}</h5>
+    <h2 class="project-list-heading">Project List</h2><hr style="border-top: 2px solid #000;">
     <div class="create-project-link">
         <a href="{% url 'create_project' %}" class="create_bug_link" data-toggle="modal"
            data-target="#createProjectModal"
-           style="color: #2b4a6a; margin-bottom: 10px; margin-left:185px;"><strong>Create New</strong></a>
+           style="color: #2b4a6a; margin-bottom: 10px; margin-left:185px; text-decoration: none;">
+            <i class="fa-solid fa-circle-plus fa-xl" aria-hidden="true"></i>
+        </a>
     </div>
     <table class="table">
         <thead class="project-head-title">
@@ -33,24 +34,27 @@
             {% for project in projects %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td><a style="color: #386fa7;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a> </td>
+                <td><a style="color: #2b4a6a; text-decoration: none; font-weight: 600;" href="{% url 'bug_list' project.id %}">{{ project.name }}</a></td>
                 <td><span style="color: #b8253b;">{{ project.code }}</span></td>
                 <td>{{ project.created_at }}</td>
                 <td>
-                    <button class="btn btn-danger delete-project-button" style="padding: 4px 10px 4px 10px; font-size: 12px;"
-                    data-project-id="{{ project.id }}"
-                    data-delete-url="{% url 'delete_project' project_id=project.id %}">Delete</button>
+                    <a class="trash-icon delete-project-button" style="font-size: 14px;"
+                       href="#" data-project-id="{{ project.id }}"
+                       data-delete-url="{% url 'delete_project' project_id=project.id %}">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                    </a>
                 </td>
                 <td>
-                    <button style="padding: 4px 15px 4px 15px; font-size: 12px; background: #2b4a6a; border-color: #2b4a6a;"
-                            class="btn btn-primary view-project" data-toggle="modal" data-target="#projectModal"
+                    <a style="font-size: 14px;"
+                            class="eye-icon view-project" href="#" data-toggle="modal" data-target="#projectModal"
                     data-project-id="{{ project.id }}"
                     data-project-name="{{ project.name }}"
                     data-project-code="{{ project.code }}"
                     data-created-user="{{ project.created_user }}"
                     data-assigned-user="{{ project.users.all|join:', ' }}"
-                    data-description="{{ project.description }}">View
-                    </button>
+                    data-description="{{ project.description }}">
+                        <i class="fa fa-eye" aria-hidden="true"></i>
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -62,7 +66,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 style="color: #dc3545;" class="modal-title" id="projectModalLabel">Project Details</h5>
+                    <h5 style="color: #b8253b;" class="modal-title" id="projectModalLabel">Project Details</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

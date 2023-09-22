@@ -16,7 +16,7 @@ $(document).ready(function () {
             type: 'POST',
             url: url,
             data: formData,
-            contentType: false,  // set content type to false for FormData
+            contentType: false,  // set content type to false for ForFData
             processData: false,  // Disable processData for FormData
             success: function (data) {
                 console.log(data);

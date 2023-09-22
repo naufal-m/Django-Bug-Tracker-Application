@@ -9,18 +9,17 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 <!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
 
 <!--    js files-->
     <script src="{% static 'js/statusupdate.js' %}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+    <script src="{% static 'js/imagepopup.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
 </head>
 <body>
-<div class="bread-crumb" style="margin-left: 145px; margin-top: -10px; margin-bottom: 20px;">
-    <p><a style="color: #b8253b;" href="{% url 'home' %}">Home</a> |
-        <a style="color: #b8253b;" href="{% url 'bug_list' project_id=project_id %}">&nbsp;Bug List</a> |
+<div class="bread-crumb" style="margin-left: 150px; margin-top: -60px; margin-bottom: 20px;">
+    <p><a style="color: #b8253b; text-decoration: none;" href="{% url 'home' %}">Home</a> |
+        <a style="color: #b8253b; text-decoration: none;" href="{% url 'bug_list' project_id=project_id %}">&nbsp;Bug List</a> |
         <span style="font-size:14px;">{{ bug.bug_id }}</span></p>
 </div>
 <div class="container" style="width: 2000px; margin-bottom: 25px;">
@@ -40,7 +39,7 @@
             <p style="margin-top: -10px;"><span style="font-weight:bold; color: #2b4a6a;">Description:</span><br><span
                     style="font-weight: 400;">{{ bug.description }}</span></p>
             <p style="margin-top: -10px;"><span style="font-weight:bold; color: #2b4a6a;">Status: </span>&nbsp;&nbsp;
-                <span style="font-weight: 400; padding: 8px 10px 9px 10px; cursor: pointer; font-size: 12px;"
+                <span style="font-weight: 400; padding: 8px 10px 9px 10px; font-size: 12px; cursor: default;"
                       class=" status-button {% if bug.status == 'Open' %}status-open
                         {% elif bug.status == 'In Progress' %}status-in-progress
                         {% elif bug.status == 'Re-open' %}status-reopen
@@ -49,9 +48,10 @@
 
             <!-- Display the uploaded image -->
             {% if bug.images %}
-            <p style="font-weight:bold; color: #2b4a6a;">Image:</p>
-            <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
-                <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image"></a>
+                <p style="font-weight:bold; color: #2b4a6a;">Image:</p>
+                <a href="{{ bug.images.url }}" data-lightbox="bug-gallery" data-title="Bug Image">
+                    <img src="{{ bug.images.url }}" alt="Bug Image" class="bug-image">
+                </a>
             {% endif %}
             <hr>
 
@@ -78,11 +78,11 @@
                     <div class="form-group">
                         <label for="commandInput"><span
                                 style="font-weight:bold; color: #2b4a6a;">Comments:</span></label>
-                        <textarea placeholder="Add your comment..." class="form-control" name="command2"
+                        <textarea placeholder="Add your comment..." required class="form-control" name="command2"
                                   id="commandInput" rows="3" style="margin-top: 5px;"></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 10px;">
                         <label for="images"><span
                                 style="font-weight:bold; color: #2b4a6a;"></span></label>
                         <input style="padding: 0px; font-size: 13px; cursor: pointer; margin-top: -10px;"
@@ -107,13 +107,13 @@
             </div>
         </div>
 
-        <div style="padding: 10px;"></div>
+        <div style="padding: 15px;"></div>
 
         <div class="bug-history">
             <div class="history">
-                <p style="border-bottom: 3px solid #ccc; margin-bottom:12px;">
-                    <span style="font-weight:bold; color: #2b4a6a; font-size: 16px;">Comments:</span>
-                </p>
+                <p class="history-p">
+                    <span style="font-weight:500; color: #2b4a6a; font-size: 16px;">Comments:</span>
+                </p><hr>
                 <p style="font-size: 14px;"><span style="color:#b8253b;">{{ bug.reporter }}</span>
                     created this bug and assigned to {{ bug.assigned_to }} on {{ bug.created_at }}</p>
                 <hr>

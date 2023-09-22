@@ -5,23 +5,28 @@
     <title>Create Bug</title>
 
     {% load static %}
+<!--    css files-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+
+<!--    js files-->
+    <script src="{% static 'js/create_bug.js' %}"></script>
 </head>
 <body>
-<div class="bread-crumb1" style="margin-left: 338px; margin-bottom: -35px;">
+<div class="bread-crumb1" style="margin-left: 440px; margin-bottom: -35px; margin-top: 50px;">
     <p style="margin-left: 10px; margin-bottom: 50px;"><a style="color: #b8253b;"
                                                           href="{% url 'bug_list' project_id=project_id %}">
         Bug List</a> | <span style="font-size:14px;">{{ project_name }}-{{ user.username }} | Create</span></p>
 </div>
-<div class="container" style="max-width: 800px;">
-    <h2 style="margin-left: 20px; border-bottom: 2px solid #ccc;">Create Bug</h2>
-    <form method="post" enctype="multipart/form-data">
+<div class="container" style="max-width: 600px;">
+    <h2 style="margin-left: 20px;">Create Bug</h2><hr style="border-top: 2px solid #000;">
+    <form id="myForm" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button style="background-color: #2b4a6a; padding: 6px 20px 6px 20px;
-        font-size: 14px;" type="submit">Add
-        </button>
+        <a href="#" onclick="submitForm();">
+            <i class="fa-solid fa-circle-plus fa-xl" aria-hidden="true"></i>
+        </a>
     </form>
 </div>
 </body>

@@ -11,13 +11,14 @@
 
 </head>
 <body>
-<div class="bread-crumb" style="margin-left: 147px;">
+<div class="bread-crumb" style="margin-left: 150px;">
     <p><span style="font-size:16px;">{{ user.username }}</span> | <a style="color: #b8253b;" href="{% url 'login' %}">&nbsp;Logout</a>
     </p>
 </div>
 <div class="container">
+    <h3 style="font-weight:600;">Hi, {{ user.username }}</h3>
     <p>Check your Bug status summary of each project which assigned. Click here to view you project lists
-        <a style="color: #2b4a6a; font-weight: 600;" href="{% url 'project_list' %}">&nbsp;Project List</a></p><br>
+        <a style="color: #b8253b; font-weight: 600;" href="{% url 'project_list' %}">&nbsp;Project List</a></p><br>
 
     {% for project_info in project_data %}
     <h6 style="margin-top: -10px; margin-bottom: -5px;">

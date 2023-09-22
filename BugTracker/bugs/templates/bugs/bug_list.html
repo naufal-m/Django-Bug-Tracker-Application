@@ -7,12 +7,13 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 
 {% block content %}
-<div class="bread-crumb">
-    <p><a style="color: #b8253b;" href="{% url 'home' %}">Home</a> | <a style="color: #b8253b;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">
+<div class="bread-crumb" style="margin: 30px 0px 50px 17px;">
+    <p><a style="color: #b8253b; text-decoration: none;" href="{% url 'home' %}">Home</a> | <a style="color: #b8253b; text-decoration: none;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">
         {{ project_name }}-{{ user.username }}</span></p>
 
 </div>
-<h2 style="border-bottom: 2px solid #ccc;">Bug List</h2>
+<div class="container">
+<h2>Bug List</h2><hr style="border-top: 2px solid #000;">
 
 <!-- Display status counts at the top -->
 <div class="status-count">
@@ -33,7 +34,7 @@
         <option value="In Progress">In Progress</option>
         <option value="Re-open">Re-open</option>
         <option value="Done">Done</option>
-        <option value="Close">Closed</option>
+        <option value="Closed">Closed</option>
     </select>
 
     <div style="margin-left: 10px;">
@@ -47,7 +48,9 @@
     </div>
 
     <div class="create_bug_link">
-        <a style="color: #2b4a6a;" href="{% url 'create_bug' project_id=project_id %}"><strong>Create New</strong></a>
+        <a style="color: #2b4a6a; text-decoration: none;" href="{% url 'create_bug' project_id=project_id %}">
+            <i class="fa-solid fa-circle-plus fa-xl" aria-hidden="true"></i>
+        </a>
     </div>
 </div>
 
@@ -66,13 +69,13 @@
         <tbody>
         {% for bug in bugs %}
         <tr data-status="{{ bug.status }}" data-assigned="{{ bug.assigned_to.id }}">
-            <td><a style="color: #386fa7;" href="{% url 'bug_detail' project_id=project_id bug_id=bug.id %}">{{ bug.bug_id }}</a>
+            <td><a style="color: #2b4a6a; text-decoration: none; font-weight: 600;" href="{% url 'bug_detail' project_id=project_id bug_id=bug.id %}">{{ bug.bug_id }}</a>
             </td>
             <td>{{ bug.title }}</td>
             <td>{{ bug.created_at }}</td>
             <td>{{ bug.reporter }}</td>
             <td>{{ bug.assigned_to }}</td>
-            <td style="margin-top: 7px; padding-bottom: 10px; vertical-align: middle; font-size: 12px;" class=" status-button {% if bug.status == 'Open' %}status-open
+            <td style="margin-top: 7px; padding-bottom: 10px; vertical-align: middle; font-size: 12px; cursor: default;" class=" status-button {% if bug.status == 'Open' %}status-open
             {% elif bug.status == 'In Progress' %}status-in-progress
             {% elif bug.status == 'Re-open' %}status-reopen
             {% elif bug.status == 'Done' %}status-done
@@ -83,10 +86,12 @@
     </table>
 </div>
 
-<p style="margin-top: 20px;">Download <a href="{% url 'generate_pdf_report' project_id=project_id %}"
-                                         class="btn-custom-report" style="color: #b8253b;">Bug report</a></p>
+<p style="margin-top: 20px; font-weight:400;">Download <a href="{% url 'generate_pdf_report' project_id=project_id %}"
+                                         class="btn-custom-report" style="color: #b8253b; text-decoration: none;">
+    <span style="font-weight: 500;">Bug report</span></a></p>
 
-<p style="margin-top: -20px;">Click here to <a href="{% url 'send_mail_bug_report' project_id=project_id %}"
-                                               class="btn-custom-report" style="color: #b8253b;">send mail</a> the report</p>
-
+<p style="margin-top: -16px; font-weight:400;">Click here to <a href="{% url 'send_mail_bug_report' project_id=project_id %}"
+                                                                class="btn-custom-report" style="color: #b8253b; text-decoration: none;">
+    <span style="font-weight: 500;">send mail</span></a> the report</p>
+</div>
 {% endblock %}

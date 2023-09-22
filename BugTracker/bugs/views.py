@@ -61,7 +61,7 @@ def signup(request):
     else:
         form = SignUpForm()
 
-    template_name = 'bugs/signup.html'
+    template_name = 'access/signup.html'
     context = {
         'form': form,
     }
@@ -69,7 +69,7 @@ def signup(request):
 
 
 class CustomLoginView(LoginView, TemplateView):
-    template_name = 'bugs/login.html'  # Replace with the actual template path
+    template_name = 'access/login.html'  # Replace with the actual template path
 
     def form_valid(self, form):
         login(self.request, form.get_user())
@@ -123,7 +123,7 @@ def forgot_password(request):
     else:
         form = ForgotPassword()
 
-    template_name = 'bugs/forgot-password.html'
+    template_name = 'access/forgot-password.html'
     context = {
         'form': form,
     }
@@ -167,7 +167,7 @@ def reset_password(request, token):
     else:
         form = PasswordResetForm()
 
-    template_name = "bugs/reset-password.html"
+    template_name = "access/reset-password.html"
     context = {
         'form': form,
         'token': token,
@@ -181,7 +181,7 @@ def project_list(request):
     user = request.user
     projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
 
-    template_name = 'bugs/project_list.html'
+    template_name = 'project/project_list.html'
     context = {
         'projects': projects,
     }
@@ -235,7 +235,7 @@ def create_project(request):
     else:
         form = ProjectForm()
 
-    template_name = 'bugs/create_project.html'
+    template_name = 'project/create_project.html'
     context = {
         'form': form,
     }
@@ -249,6 +249,10 @@ def bug_list(request, project_id):
     # reporter=request.user.username --> indicates the bug list of created user after logged in.
     bugs = Bug.objects.filter(project_id=project_id)
     project = Project.objects.get(id=project_id)
+
+    creator_user = project.created_user
+    associated_user = project.users.all()
+    combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
 
     # Calculate bug counts by status
     open_count = Bug.objects.filter(project=project_id, status='Open').count()
@@ -267,6 +271,7 @@ def bug_list(request, project_id):
         'bugs': bugs,
         'project_name': project.name,
         'project_id': project_id,
+        'users': combined_users,
         'open_count': open_count,
         'in_progress_count': in_progress_count,
         'reopen_count': reopen_count,
@@ -388,25 +393,23 @@ def update_bug_status(request, project_id, bug_id):
             bug.save()
 
             #   Prepare a success response
-            response_data = {
-                'message': 'Bug status updated successfully.'
+            message = 'Bug status updated successfully'
+
+            template_name = 'bugs/update_success.html'
+            context = {
+                'bug': bug,
+                'form': form,
+                'project_id': project_id,
+                'response': message,
+                'status': bug.status,
             }
 
-            #   Return a JSON response with the success message
-            return JsonResponse(response_data)
-
-            # template_name = 'bugs/bug_detail.html'
-            # context = {
-            #     'form': form,
-            #     'project_id': project_id,
-            # }
-            #
-            # return render(request, template_name, context)
+            return render(request, template_name, context)
 
     else:
         form = UpdateBugForm()
 
-    template_name = 'bugs/bug_list.html'
+    template_name = 'bugs/bug_detail.html'
     context = {
         'form': form,
     }
@@ -595,7 +598,7 @@ def project_bar_chart(request, project_id):
     status_counts_json = json.dumps(status_counts)
     status_labels_json = json.dumps(status_labels)
 
-    template_name = 'bugs/project_bar_chart.html'
+    template_name = 'project/project_bar_chart.html'
     context = {
         'project': project,
         'open_count': open_count,

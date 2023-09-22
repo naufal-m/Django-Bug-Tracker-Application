@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Updated</title>
+
+    {% load static %}
+<!--    css files-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+
+</head>
+<body>
+
+<div class="container" style="width: 2000px; margin-top: 20px;">
+    <p>{{ response }} and Status is changed to &nbsp;&nbsp;<span style="font-weight: 400; padding: 8px 10px 9px 10px; cursor: pointer; font-size: 13px; cursor: default;"
+                      class=" status-button {% if bug.status == 'Open' %}status-open
+                        {% elif bug.status == 'In Progress' %}status-in-progress
+                        {% elif bug.status == 'Re-open' %}status-reopen
+                        {% elif bug.status == 'Done' %}status-done
+                        {% elif bug.status == 'Closed' %}status-closed{% endif %}">{{ status }}</span></p>
+    <p> Back to <a style="color: #2b4a6a; text-decoration: none;" href="{% url 'bug_detail' project_id=project_id bug_id=bug.id %}">{{ bug.bug_id }}</a></p>
+</div>
+
+</body>
+</html>
