@@ -6,8 +6,6 @@
 
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
-<!--    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
 
 </head>
 <body>
@@ -16,9 +14,9 @@
     </p>
 </div>
 <div class="container">
-    <h3 style="font-weight:600;">Hi, {{ user.username }}</h3>
+    <h3 style="font-weight:600;">Hi, <span style="color: #b8253b;">{{ user.username }}</span></h3>
     <p>Check your Bug status summary of each project which assigned. Click here to view you project lists
-        <a style="color: #b8253b; font-weight: 600;" href="{% url 'project_list' %}">&nbsp;Project List</a></p><br>
+        <a style="color: #b8253b; font-weight: 600;" href="{% url 'project_list' %}">&nbsp;Project List.</a></p><br>
 
     {% for project_info in project_data %}
     <h6 style="margin-top: -10px; margin-bottom: -5px;">
@@ -33,8 +31,7 @@
         Re-open:<span style="color: brown;">  {{ project_info.reopen_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Done:<span style="color: green;">  {{ project_info.done_count }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         Closed:<span style="color: grey;">  {{ project_info.close_count }}</span>
-        <span style="color: #2b4a6a; margin-left: 530px; font-size: 13px;">
-                    <a style="color: #2b4a6a; margin-left: -20px;" href="{{ project_info.bar_chart_url }}">Chart View</a></span>
+        <span style="color: #2b4a6a; margin-left: 530px; font-size: 13px;"><a style="color: #2b4a6a; margin-left: -20px;" href="{{ project_info.bar_chart_url }}">Chart View</a></span>
     </p>
     {% endfor %}
 </div>

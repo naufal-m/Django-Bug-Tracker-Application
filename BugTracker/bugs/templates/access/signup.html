@@ -5,10 +5,10 @@
     <title>Signup</title>
 
     {% load static %}
+<!--    css files-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/access.css' %}">
-
 
 </head>
 <body>
@@ -17,7 +17,6 @@
     <form method="post" action="{% url 'signup' %}">
         {% csrf_token %}
         <h2 style="margin-bottom: 30px; margin-top: -10px; color: #b8253b;">Signup Here</h2>
-
         <label class="access-label" for="username">Username</label><br>
         {{ form.username }}<br>
         <label class="access-label" for="email">Email</label><br>

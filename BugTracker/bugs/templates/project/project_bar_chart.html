@@ -6,8 +6,6 @@
 
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
-<!--        <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">-->
 
 </head>
 <body>
@@ -18,7 +16,6 @@
 <div class="container" style="max-width: 1000px;">
     <h4>Chart View</h4>
     <canvas id="statusChart" width="300" height="100"></canvas>
-
     <div id="status-data" data-status-counts="{{ status_counts_json|safe }}"></div>
     <div id="labels-data" data-status-labels="{{ status_labels_json|safe }}"></div>
 </div>

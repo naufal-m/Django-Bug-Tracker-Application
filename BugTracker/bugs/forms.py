@@ -5,7 +5,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 
-
 class SignUpForm(UserCreationForm):
     username = forms.CharField(
         label="Username",
@@ -100,9 +99,7 @@ class BugForm(forms.ModelForm):
 
         creator_user = project.created_user
         associated_user = project.users.all()
-
         combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
-
         self.fields['assigned_to'].queryset = combined_users
 
 
@@ -111,7 +108,7 @@ class ProjectForm(forms.ModelForm):
         widget=forms.Textarea(attrs={
             'rows': 3,
         }),  # Customize the appearance
-        help_text="Enter email addresses separated by commas.",
+        help_text="Enter email addresses separated by commas ','.",
     )
     class Meta:
         model = Project
@@ -130,3 +127,5 @@ class UpdateBugForm(forms.ModelForm):
             'images',
             'status',
         ]
+
+

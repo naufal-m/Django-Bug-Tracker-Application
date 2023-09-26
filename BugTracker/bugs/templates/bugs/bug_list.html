@@ -4,13 +4,14 @@
 
 {% load custom_filters %}
 {% load static %}
+<!--css files-->
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" xmlns="http://www.w3.org/1999/html">
 
 {% block content %}
 <div class="bread-crumb" style="margin: 30px 0px 50px 17px;">
-    <p><a style="color: #b8253b; text-decoration: none;" href="{% url 'home' %}">Home</a> | <a style="color: #b8253b; text-decoration: none;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">
+    <p><a style="color: #b8253b; text-decoration: none;" href="{% url 'home' %}">Home</a> |
+        <a style="color: #b8253b; text-decoration: none;" href="{% url 'project_list' %}">Project List</a> | <span style="font-size:14px;">
         {{ project_name }}-{{ user.username }}</span></p>
-
 </div>
 <div class="container">
 <h2>Bug List</h2><hr style="border-top: 2px solid #000;">
@@ -62,7 +63,7 @@
             <th>Title</th>
             <th>Created On</th>
             <th>Reporter</th>
-            <th>Assigned_to</th>
+            <th>Assignee</th>
             <th>Status</th>
         </tr>
         </thead>
@@ -89,7 +90,6 @@
 <p style="margin-top: 20px; font-weight:400;">Download <a href="{% url 'generate_pdf_report' project_id=project_id %}"
                                          class="btn-custom-report" style="color: #b8253b; text-decoration: none;">
     <span style="font-weight: 500;">Bug report</span></a></p>
-
 <p style="margin-top: -16px; font-weight:400;">Click here to <a href="{% url 'send_mail_bug_report' project_id=project_id %}"
                                                                 class="btn-custom-report" style="color: #b8253b; text-decoration: none;">
     <span style="font-weight: 500;">send mail</span></a> the report</p>

@@ -48,7 +48,10 @@ def signup(request):
             password = form.cleaned_data.get('password1')
             form.save()
 
-            new_user = authenticate(username=username, password=password)
+            new_user = authenticate(
+                username=username,
+                password=password
+            )
             if new_user is not None:
                 login(request, new_user)
                 return redirect('login')
@@ -57,7 +60,10 @@ def signup(request):
             # Display error messages if form is not valid
             for field_name, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Error in {form.fields[field_name].label}: {error}")
+                    messages.error(
+                        request,
+                        f"Error in {form.fields[field_name].label}: {error}"
+                    )
     else:
         form = SignUpForm()
 
@@ -65,7 +71,11 @@ def signup(request):
     context = {
         'form': form,
     }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 class CustomLoginView(LoginView, TemplateView):
@@ -106,14 +116,21 @@ def forgot_password(request):
                 try:
                     profile = Profile.objects.get(user_id=user_id)
                 except Profile.DoesNotExist:
-                    profile = Profile.objects.create(user=user, forget_password_token=token, created_at=datetime.now())
+                    profile = Profile.objects.create(
+                        user=user,
+                        forget_password_token=token,
+                        created_at=datetime.now()
+                    )
                     profile.save()
 
                 profile.forget_password_token = token
                 profile.created_at = datetime.now()
                 profile.save()
 
-                send_forget_password_mail(email, token)
+                send_forget_password_mail(
+                    email,
+                    token
+                )
 
                 message = 'An email has been sent.'
                 messages.success(request, message)
@@ -127,7 +144,11 @@ def forgot_password(request):
     context = {
         'form': form,
     }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 def reset_password(request, token):
@@ -157,7 +178,10 @@ def reset_password(request, token):
             profile.save()
 
             message = 'Password reset successful. Check your email.'
-            messages.success(request, message)
+            messages.success(
+                request,
+                message
+            )
             time.sleep(5)
 
             return redirect('login')
@@ -173,7 +197,64 @@ def reset_password(request, token):
         'token': token,
         'user': user,
     }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
+
+
+@login_required
+def home_page(request):
+    user = request.user
+    projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
+
+    project_data = []
+    for project in projects:
+        open_count = Bug.objects.filter(project=project, status='Open').count()
+        in_progress_count = Bug.objects.filter(project=project, status='In Progress').count()
+        reopen_count = Bug.objects.filter(project=project, status='Re-open').count()
+        close_count = Bug.objects.filter(project=project, status='Closed').count()
+        done_count = Bug.objects.filter(project=project, status='Done').count()
+
+        status_counts = [
+            open_count,
+            in_progress_count,
+            reopen_count,
+            done_count,
+            close_count
+        ]
+        status_total_count = sum(status_counts)
+
+        project_info = {
+            'project': project,
+            'status_total_count': status_total_count,
+            'open_count': open_count,
+            'in_progress_count': in_progress_count,
+            'reopen_count': reopen_count,
+            'close_count': close_count,
+            'done_count': done_count,
+            'bug_list_url': reverse(
+                'bug_list',
+                args=[project.id]
+            ),
+            'bar_chart_url': reverse(
+                'project_chart',
+                args=[project.id]
+            ),
+        }
+        project_data.append(project_info)
+
+    template_name = 'bugs/home.html'
+    context = {
+        'user': user,
+        'project_data': project_data,
+    }
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
@@ -185,20 +266,11 @@ def project_list(request):
     context = {
         'projects': projects,
     }
-    return render(request, template_name, context)
-
-
-@login_required
-def delete_project(request, project_id):
-    if request.method == 'POST':
-        project = Project.objects.get(id=project_id)
-        project.delete()
-        return JsonResponse({
-            'success': True
-        })
-    return JsonResponse({
-        'success': False
-    })
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
@@ -206,7 +278,6 @@ def create_project(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
         if form.is_valid():
-
             # Parse the entered emails and associate users with the project
             email_list = [email.strip() for email in form.cleaned_data['users'].split(',')]
             users = User.objects.filter(email__in=email_list)
@@ -220,16 +291,20 @@ def create_project(request):
 
             for email in user_emails:
                 email = email.strip()  # Remove extra spaces
-
                 # Check if the email corresponds to a registered user or non register user
                 try:
                     user = User.objects.get(email=email)
                     # Send email to registered users
-                    send_project_invitation_email(project, user)
-
+                    send_project_invitation_email(
+                        project,
+                        user
+                    )
                 except User.DoesNotExist:
                     # Send email to unregistered users
-                    send_registration_invitation_email(project, email)
+                    send_registration_invitation_email(
+                        project,
+                        email
+                    )
 
             return redirect('project_list')
     else:
@@ -239,7 +314,24 @@ def create_project(request):
     context = {
         'form': form,
     }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
+
+
+@login_required
+def delete_project(request, project_id):
+    if request.method == 'POST':
+        project = Project.objects.get(id=project_id)
+        project.delete()
+        return JsonResponse({
+            'success': True
+        })
+    return JsonResponse({
+        'success': False
+    })
 
 
 @login_required
@@ -279,25 +371,66 @@ def bug_list(request, project_id):
         'done_count': done_count,
     }
 
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
+
+
+@login_required
+def create_bug(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    if request.method == 'POST':
+        # form = BugForm(request.POST, request.FILES, user=request.user)
+        form = BugForm(project, request.POST, request.FILES)
+        if form.is_valid():
+            bug = form.save(commit=False)
+            bug.project_id = project_id  # Set the project_id for the bug
+            bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
+            bug.assigned = form.cleaned_data['assigned_to']
+            bug.save()
+
+            # Use the send_bug_assigned_email function to send the email
+            send_bug_assigned_email(bug)
+
+            return redirect(
+                'bug_list',
+                project_id=project_id
+            )
+    else:
+        # form = BugForm(user=request.user)
+        form = BugForm(project=project)
+
+        project = Project.objects.get(id=project_id)
+
+    template_name = 'bugs/create_bug.html'
+    context = {
+        'form': form,
+        'project_name': project.name,
+        'project_id': project_id,
+    }
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
 def bug_detail(request, project_id, bug_id):
     bug = get_object_or_404(Bug, pk=bug_id)
-
     project = Project.objects.get(id=project_id)
 
     creator_user = project.created_user
     associated_user = project.users.all()
-
     combined_users = associated_user | User.objects.filter(pk=creator_user.pk)
     bug_history_entries = BugHistory.objects.all()
 
     # last time for status/bug update as well as status close
     last_updated_times = {}
     last_closed_updated_times = {}
-
 
     last_updated_time = BugHistory.objects.filter(
         bug=bug,
@@ -320,40 +453,11 @@ def bug_detail(request, project_id, bug_id):
         'last_updated_time': last_updated_time,
         'last_closed_updated_time': last_closed_updated_time,
     }
-    return render(request, template_name, context)
-
-
-@login_required
-def create_bug(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-
-    if request.method == 'POST':
-        # form = BugForm(request.POST, request.FILES, user=request.user)
-        form = BugForm(project, request.POST, request.FILES)
-        if form.is_valid():
-            bug = form.save(commit=False)
-            bug.project_id = project_id  # Set the project_id for the bug
-            bug.reporter = request.user.username  # Set the reporter to the username of the logged-in user
-            bug.assigned = form.cleaned_data['assigned_to']
-            bug.save()
-
-            # Use the send_bug_assigned_email function to send the email
-            send_bug_assigned_email(bug)
-
-            return redirect('bug_list', project_id=project_id)
-    else:
-        # form = BugForm(user=request.user)
-        form = BugForm(project=project)
-
-        project = Project.objects.get(id=project_id)
-
-    template_name = 'bugs/create_bug.html'
-    context = {
-        'form': form,
-        'project_name': project.name,
-        'project_id': project_id,
-    }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
@@ -367,7 +471,6 @@ def update_bug_status(request, project_id, bug_id):
             command = request.POST.get('command2', '')
             uploaded_image = request.FILES.get('images')
             bug.update = request.user.username  # Set the update bugs user to the username of the logged-in user
-
             bug.save()
 
             # Create a new BugHistory entry (saving data to BugHistory Model)
@@ -385,8 +488,14 @@ def update_bug_status(request, project_id, bug_id):
             # Handle image upload
             if uploaded_image:
                 # Create a SimpleUploadedFile from the uploaded image
-                uploaded_image_file = SimpleUploadedFile(uploaded_image.name, uploaded_image.read())
-                history_entry.images.save(uploaded_image.name, uploaded_image_file)
+                uploaded_image_file = SimpleUploadedFile(
+                    uploaded_image.name,
+                    uploaded_image.read()
+                )
+                history_entry.images.save(
+                    uploaded_image.name,
+                    uploaded_image_file
+                )
 
             bug.status = new_status
             bug.comment = command
@@ -394,7 +503,6 @@ def update_bug_status(request, project_id, bug_id):
 
             #   Prepare a success response
             message = 'Bug status updated successfully'
-
             template_name = 'bugs/update_success.html'
             context = {
                 'bug': bug,
@@ -403,8 +511,11 @@ def update_bug_status(request, project_id, bug_id):
                 'response': message,
                 'status': bug.status,
             }
-
-            return render(request, template_name, context)
+            return render(
+                request,
+                template_name,
+                context
+            )
 
     else:
         form = UpdateBugForm()
@@ -413,7 +524,11 @@ def update_bug_status(request, project_id, bug_id):
     context = {
         'form': form,
     }
-    return render(request, template_name, context)
+    return render(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
@@ -508,7 +623,6 @@ def generate_pdf_report(request, project_id):
 
     # Create the table and style
     table = Table(data)
-
     # table = LongTable(data, colWidths=col_widths)
     style = TableStyle([
         ('BACKGROUND', (0, 1), (-1, 1), colors.grey),
@@ -526,7 +640,6 @@ def generate_pdf_report(request, project_id):
         style.add('LINEBELOW', (0, i), (-1, i), 1, colors.black)
 
     table.setStyle(style)
-
     story.append(table)
 
     # Build the PDF document
@@ -543,45 +656,6 @@ def generate_pdf_report(request, project_id):
 
 
 @login_required
-def home_page(request):
-    user = request.user
-
-    projects = Project.objects.filter(Q(created_user=user) | Q(users=user)).distinct()
-
-    project_data = []
-
-    for project in projects:
-        open_count = Bug.objects.filter(project=project, status='Open').count()
-        in_progress_count = Bug.objects.filter(project=project, status='In Progress').count()
-        reopen_count = Bug.objects.filter(project=project, status='Re-open').count()
-        close_count = Bug.objects.filter(project=project, status='Closed').count()
-        done_count = Bug.objects.filter(project=project, status='Done').count()
-
-        status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
-        status_total_count = sum(status_counts)
-
-        project_info = {
-            'project': project,
-            'status_total_count': status_total_count,
-            'open_count': open_count,
-            'in_progress_count': in_progress_count,
-            'reopen_count': reopen_count,
-            'close_count': close_count,
-            'done_count': done_count,
-            'bug_list_url': reverse('bug_list', args=[project.id]),
-            'bar_chart_url': reverse('project_chart', args=[project.id]),
-        }
-        project_data.append(project_info)
-
-    template_name = 'bugs/home.html'
-    context = {
-        'user': user,
-        'project_data': project_data,
-    }
-    return render(request, template_name, context)
-
-
-@login_required
 def project_bar_chart(request, project_id):
     project = Project.objects.get(id=project_id)
 
@@ -592,8 +666,20 @@ def project_bar_chart(request, project_id):
     done_count = Bug.objects.filter(project=project_id, status='Done').count()
     close_count = Bug.objects.filter(project=project_id, status='Closed').count()
 
-    status_counts = [open_count, in_progress_count, reopen_count, done_count, close_count]
-    status_labels = ['Open', 'In Progress', 'Re-open', 'Done', 'Closed']
+    status_counts = [
+        open_count,
+        in_progress_count,
+        reopen_count,
+        done_count,
+        close_count
+    ]
+    status_labels = [
+        'Open',
+        'In Progress',
+        'Re-open',
+        'Done',
+        'Closed'
+    ]
 
     status_counts_json = json.dumps(status_counts)
     status_labels_json = json.dumps(status_labels)
@@ -617,7 +703,6 @@ def project_bar_chart(request, project_id):
 def send_mail_bug_report(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     selected_project = project_id
-
     bugs = Bug.objects.filter(project=project)
     bugs.reporter = request.user.username
 
@@ -698,7 +783,6 @@ def send_mail_bug_report(request, project_id):
 
     # Create the table and style
     table = Table(data)
-
     # table = LongTable(data, colWidths=col_widths)
     style = TableStyle([
         ('BACKGROUND', (0, 1), (-1, 1), colors.grey),
@@ -716,13 +800,11 @@ def send_mail_bug_report(request, project_id):
         style.add('LINEBELOW', (0, i), (-1, i), 1, colors.black)
 
     table.setStyle(style)
-
     # Build the PDF document
     doc.build(paragraphs + [table])
     buffer.seek(0)
 
     pdf_filename = f"{project.name}_bug_report.pdf"
-
     # Create the HttpResponse object with the appropriate PDF headers
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
@@ -741,6 +823,9 @@ def send_mail_bug_report(request, project_id):
     context = {
         'project_id': project_id,
     }
-    return render(request, template_name, context)
-
+    return render(
+        request,
+        template_name,
+        context
+    )
 

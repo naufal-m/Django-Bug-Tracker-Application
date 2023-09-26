@@ -5,20 +5,36 @@ from django.contrib.auth.models import User
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
     forget_password_token = models.CharField(max_length=100)
     created_at = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return self.user.username
 
+
 class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    code = models.CharField(max_length=3, blank=True, editable=False)
+    code = models.CharField(
+        max_length=3,
+        blank=True,
+        editable=False
+    )
     created_at = models.DateTimeField(default=datetime.now)
-    users = models.ManyToManyField(User, related_name='projects')
-    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_projects')
+    users = models.ManyToManyField(
+        User,
+        related_name='projects'
+    )
+    created_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_projects'
+    )
 
     def __str__(self):
         return self.name
@@ -38,16 +54,33 @@ class Bug(models.Model):
         ('Closed', 'Closed'),
     ]
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)  # Add this line
-    bug_id = models.CharField(max_length=10, unique=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE
+    )  # Add this line
+    bug_id = models.CharField(max_length=10,
+                              unique=True
+                              )
     title = models.CharField(max_length=200)
     description = models.TextField()
     reporter = models.CharField(max_length=150)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Open'
+    )
     # created_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(default=datetime.now)
-    images = models.ImageField(upload_to='bug_images/', blank=True, null=True)
-    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_bugs')
+    images = models.ImageField(
+        upload_to='bug_images/',
+        blank=True,
+        null=True
+    )
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='assigned_bugs'
+    )
 
     def __str__(self):
         return self.title
@@ -64,12 +97,18 @@ class Bug(models.Model):
 
         super(Bug, self).save(*args, **kwargs)
 
+
 class Image(models.Model):
-    bug = models.ForeignKey('bugs.Bug', related_name='bug_images', on_delete=models.CASCADE)
+    bug = models.ForeignKey(
+        'bugs.Bug',
+        related_name='bug_images',
+        on_delete=models.CASCADE
+    )
     image = models.ImageField(upload_to='bug_images/')
 
     def __str__(self):
         return f"Image for Bug {self.bug.id}"
+
 
 class BugHistory(models.Model):
     STATUS_CHOICES = [
@@ -79,16 +118,38 @@ class BugHistory(models.Model):
         ('Done', 'Done'),
         ('Closed', 'Closed'),
     ]
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    bug = models.ForeignKey(Bug, on_delete=models.CASCADE)  # Add this line to link BugHistory to Bug
-    bug_id_code = models.CharField(max_length=10, unique=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE
+    )
+    bug = models.ForeignKey(
+        Bug,
+        on_delete=models.CASCADE
+    )  # Add this line to link BugHistory to Bug
+    bug_id_code = models.CharField(
+        max_length=10,
+        unique=False
+    )
     comments = models.TextField(blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Open'
+    )
     updated_at = models.DateTimeField(default=datetime.now)
     status_assigned_user = models.CharField(max_length=150)  # You may want to change the field type
-    report_user = models.ForeignKey(User, on_delete=models.CASCADE)  # Assuming User is your user model
-    images = models.ImageField(upload_to='bug_images/', blank=True, null=True)
+    report_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )  # Assuming User is your user model
+    images = models.ImageField(
+        upload_to='bug_images/',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'BugHistory for Bug {self.bug_id}'
+
+
 

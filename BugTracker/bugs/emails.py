@@ -6,7 +6,10 @@ from django.urls import reverse
 
 def send_forget_password_mail(email, token):
     subject = 'Your forget password link'
-    reset_form_url = reverse('reset_password', args=[token])
+    reset_form_url = reverse(
+        'reset_password',
+        args=[token]
+    )
     reset_link = f"{settings.BASE_URL}{reset_form_url}"
     message = f'Hi, Click on the link to reset your password {reset_link}'
     email_from = settings.EMAIL_HOST_USER
@@ -29,7 +32,7 @@ def send_password_change_ack(user):
                f'{login_link}')
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [user.email]
-    print("inbox comes in: ", recipient_list)
+    print("inbox receives in: ", recipient_list)
     send_mail(
         subject,
         message,
@@ -40,7 +43,12 @@ def send_password_change_ack(user):
 
 
 def send_bug_assigned_email(bug):
-    bug_list_url = reverse('bug_list', kwargs={'project_id': bug.project_id})
+    bug_list_url = reverse(
+        'bug_list',
+        kwargs={
+            'project_id': bug.project_id
+        }
+    )
     bug_link = f"{settings.BASE_URL}{bug_list_url}?bug_id={bug.id}"
     subject = "{} assigned a new bug: {}".format(bug.reporter, bug.title)
 
@@ -52,7 +60,10 @@ def send_bug_assigned_email(bug):
         'bug': bug,  # Pass the bug instance to the template
     }
 
-    message = render_to_string(template_name, context)
+    message = render_to_string(
+        template_name,
+        context
+    )
 
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [bug.assigned.email]
@@ -79,7 +90,6 @@ def send_project_invitation_email(project, user):
     }
 
     message = render_to_string(template_name, context)
-
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [user.email]
     send_mail(
@@ -104,7 +114,10 @@ def send_registration_invitation_email(project, email):
         'project_name': project.name,  # Pass the user to the template
     }
 
-    message = render_to_string(template_name, context)
+    message = render_to_string(
+        template_name,
+        context
+    )
 
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [email]

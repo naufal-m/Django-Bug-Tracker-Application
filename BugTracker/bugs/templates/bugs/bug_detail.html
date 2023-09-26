@@ -7,7 +7,6 @@
     {% load static %}
 <!--    css files-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
 
@@ -25,12 +24,12 @@
 <div class="container" style="width: 2000px; margin-bottom: 25px;">
     <div class="page-container">
         <div class="bug-detail-page">
-            <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">ID: </span>&nbsp;&nbsp;<span
+            <p style="margin-bottom: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Bug ID: </span>&nbsp;&nbsp;<span
                     style="font-weight: 400;"> {{ bug.bug_id }}</span></p>
             <p style="margin-bottom: 2px; margin-top: 2px;"><span
-                    style="font-weight:bold; color: #2b4a6a;">Reported by: </span>&nbsp;&nbsp;<span
+                    style="font-weight:bold; color: #2b4a6a;">Reported: </span>&nbsp;&nbsp;<span
                     style="font-weight: 400;">{{ bug.reporter }}</span></p>
-            <p style="margin-bottom: 2px; margin-top: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Assigned_to: </span>&nbsp;&nbsp;<span
+            <p style="margin-bottom: 2px; margin-top: 2px;"><span style="font-weight:bold; color: #2b4a6a;">Assignee: </span>&nbsp;&nbsp;<span
                     style="font-weight: 400;">{{ bug.assigned_to }}</span></p>
             <hr>
 
@@ -55,7 +54,7 @@
             {% endif %}
             <hr>
 
-            <!--                        Show the times of bug create/last updated/status closed dates and times-->
+            <!-- Show the times of bug create/last updated/status closed dates and times-->
             <div class="update-time-logs">
                 <p style="color: #b1aeae; font-size: 14px; font-family: inherit; margin-bottom: -15px;">
                     created&nbsp;&nbsp;&nbsp;{{ bug.created_at }}</p>

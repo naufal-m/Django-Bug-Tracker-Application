@@ -7,7 +7,6 @@
     {% load static %}
 <!--    css files-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
 
 </head>
@@ -20,7 +19,9 @@
                         {% elif bug.status == 'Re-open' %}status-reopen
                         {% elif bug.status == 'Done' %}status-done
                         {% elif bug.status == 'Closed' %}status-closed{% endif %}">{{ status }}</span></p>
-    <p> Back to <a style="color: #2b4a6a; text-decoration: none;" href="{% url 'bug_detail' project_id=project_id bug_id=bug.id %}">{{ bug.bug_id }}</a></p>
+    <p> Back to bug id <a style="color: #b8253b; text-decoration: none;" href="{% url 'bug_detail' project_id=project_id bug_id=bug.id %}">{{ bug.bug_id }}</a>
+        or <a style="color: #b8253b; text-decoration: none;" href="{% url 'bug_list' project_id=project_id %}">Bug list</a>
+    </p>
 </div>
 
 </body>
